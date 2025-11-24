@@ -41,7 +41,7 @@ function createLocation(location: Location): number {
 }
 
 // Read all locations
-function getAllLocations(): Location[] {
+export function getAllLocations(): Location[] {
     const stmt = db.prepare('SELECT * FROM locations ORDER BY name');
     return stmt.all() as Location[];
 }

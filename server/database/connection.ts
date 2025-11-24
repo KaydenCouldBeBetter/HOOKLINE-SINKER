@@ -1,7 +1,4 @@
 import { Database } from 'bun:sqlite'
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 export const db = new Database(process.env.DB_PATH || 'db.sqlite')
 

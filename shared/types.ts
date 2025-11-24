@@ -93,3 +93,17 @@ export interface LocationSpecies {
     last_reported?: string;
     created_at?: string;
 }
+
+export type Success<T> = {
+    ok: true
+    value: any
+}
+
+export type Failure<E> = {
+    ok: false
+    error: any
+}
+
+export type Result<T, E> = Success<T> | Failure<E>;
+export const ok = <T>(value: T): Success<T> => ({ ok: true, value });
+export const err = <E>(error: E): Failure<E> => ({ ok: false, error });
