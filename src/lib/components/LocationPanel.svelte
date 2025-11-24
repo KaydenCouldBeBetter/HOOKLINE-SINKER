@@ -8,7 +8,7 @@
 
 {#if location}
 	<aside
-		class={`glass-panel glass-panel--ring panel--lg space-y-6 ${className}`}
+		class={`glass-panel glass-panel--ring panel--lg panel--full-height panel--left space-y-6 ${className}`}
 	>
 		<header class="flex items-start justify-between gap-3">
 			<div>

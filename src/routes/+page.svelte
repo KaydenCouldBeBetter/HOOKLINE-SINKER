@@ -84,7 +84,7 @@
 	<MapManager bind:mapStyle={mapStyle} bind:mapContainer />
 
 	<!-- UI Layer -->
-	<div class="pointer-events-none absolute inset-0" style="z-index: var(--z-panels);">
+	<div class="pointer-events-none absolute inset-0 ui-panels">
 		<!-- Left Panel - Full Height -->
 		<div class="absolute left-0 top-0 bottom-0 w-80 pointer-events-auto">
 			{#if isLocationPanelOpen && activeLocation}
@@ -138,7 +138,7 @@
 		</div>
 		
 		<!-- Map Area Controls -->
-		<div class="absolute left-80 right-80 top-0 bottom-0 pointer-events-none" style="z-index: var(--z-topbar);">
+		<div class="absolute left-80 right-80 top-0 bottom-0 pointer-events-none ui-topbar">
 			<!-- Top Small Panel - Theme Controls -->
 			<div class="pointer-events-auto flex justify-center">
 				<TopBar
@@ -155,7 +155,7 @@
 			</div>
 			
 			<!-- Bottom Small Panel - Additional Controls (if needed) -->
-			<div class="absolute bottom-0 left-0 right-0 pointer-events-auto" style="z-index: var(--z-help);">
+			<div class="absolute bottom-0 left-0 right-0 pointer-events-auto ui-help">
 				<!-- This could be for map controls, legends, etc. -->
 				{#if isHelpOpen}
 					<div class="w-fit mx-auto" style="margin-bottom: var(--space-20); margin-left: var(--space-5);">

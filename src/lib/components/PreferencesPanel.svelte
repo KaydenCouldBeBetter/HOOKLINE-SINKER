@@ -48,7 +48,7 @@
 	}));
 </script>
 
-<aside class={`glass-panel glass-panel--ring panel--lg space-y-6 ${className}`}>
+<aside class={`glass-panel glass-panel--ring panel--lg panel--full-height panel--right space-y-6 ${className}`}>
 	<header class="flex items-start justify-between">
 		<div>
 			<h2 class="text-heading-3">Preferences</h2>
@@ -57,17 +57,16 @@
 		<button
 			type="button"
 			on:click={onClose}
-			class="btn btn--ghost"
-			style="padding: 12px;"
+			class="btn btn--icon"
 			aria-label="Close preferences panel"
 		>
-			<span style="font-size: 18px; line-height: 1;">×</span>
+			<span style="font-size: var(--font-size-lg); line-height: var(--line-height-tight);">×</span>
 		</button>
 	</header>
 
-	<section class="space-y-3" style="gap: var(--space-3);">
+	<section class="space-y-3">
 		<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Target species</h3>
-		<div class="flex flex-wrap gap-2" style="gap: var(--space-2);">
+		<div class="flex flex-wrap gap-2">
 			{#each speciesOptions as option}
 				<button
 					type="button"
@@ -84,9 +83,9 @@
 		</div>
 	</section>
 
-	<section class="space-y-3" style="gap: var(--space-3);">
+	<section class="space-y-3">
 		<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Crowd level</h3>
-		<div class="flex flex-wrap gap-2" style="gap: var(--space-2);">
+		<div class="flex flex-wrap gap-2">
 			{#each crowdOptions as option}
 				<button
 					type="button"
@@ -103,9 +102,9 @@
 		</div>
 	</section>
 
-	<section class="space-y-3" style="gap: var(--space-3);">
+	<section class="space-y-3">
 		<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Weather preference</h3>
-		<div class="flex flex-wrap gap-2" style="gap: var(--space-2);">
+		<div class="flex flex-wrap gap-2">
 			{#each weatherOptions as option}
 				<button
 					type="button"
@@ -122,9 +121,9 @@
 		</div>
 	</section>
 
-	<section class="space-y-3" style="gap: var(--space-3);">
+	<section class="space-y-3">
 		<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Map style</h3>
-		<div class="flex flex-wrap gap-2" style="gap: var(--space-2);">
+		<div class="flex flex-wrap gap-2">
 			{#each mapStyleOptions as option}
 				<button
 					type="button"
