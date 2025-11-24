@@ -1,0 +1,5 @@
+# This directory stores uploaded images
+# Structure:
+# - images/species/ - Processed/optimized images for species
+# - images/thumbnails/ - Thumbnail versions
+# - images/original/ - Original uploads (backup)
