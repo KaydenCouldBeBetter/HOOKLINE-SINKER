@@ -1,0 +1,228 @@
+/* Design Tokens - Contextual Minimalism Style Guide */
+
+/* ===== CORE DESIGN SYSTEM ===== */
+
+/* Light Theme Colors */
+:root,
+[data-theme="light"] {
+  /* Primary Colors */
+  --color-bg-primary: #f6f0ec;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f8f8f8;
+  
+  /* Glass Colors */
+  --glass-light: rgba(246, 240, 236, 0.6);
+  --glass-dark: rgba(30, 30, 30, 0.6);
+  
+  /* Surface Colors */
+  --color-surface-primary: #ffffff;
+  --color-surface-secondary: #f8f8f8;
+  --color-surface-tertiary: #f5f5f5;
+  
+  /* Border Colors */
+  --color-border-primary: #6E6A86;
+  --color-border-secondary: #7A6E6E;
+  --color-border-tertiary: #8a8a8a;
+  
+  /* Text Colors */
+  --color-text-primary: #ECE3E1;
+  --color-text-secondary: #7A6E6E;
+  --color-text-tertiary: #6a6a6a;
+  --color-text-quaternary: #5a5a5a;
+  
+  /* Primary Accent Colors */
+  --color-accent-mauve: #DDB6F2;
+  --color-accent-peach: #F5C2E7;
+  --color-accent-latte: #F4DBD6;
+  
+  /* Secondary Accent Colors */
+  --color-accent-green: #ABE9B3;
+  --color-accent-sky: #89DCEB;
+  --color-accent-sapphire: #74C7EC;
+  
+  /* Semantic Colors */
+  --color-success-primary: #ABE9B3;
+  --color-success-secondary: #9FE6A8;
+  
+  --color-warning-primary: #F5C2E7;
+  --color-warning-secondary: #F8D4E7;
+  
+  --color-error-primary: #F28FAD;
+  --color-error-secondary: #F5A3B8;
+  
+  /* Glass/Vibrancy */
+  --glass-bg-opacity: 0.6;
+  --glass-blur: 16px;
+  --glass-saturation: 150%;
+  --glass-border-opacity: 0.3;
+  --glass-ring-opacity: 0.5;
+}
+
+/* Dark Theme Colors */
+[data-theme="dark"] {
+  /* Primary Colors */
+  --color-bg-primary: #1e1e1e;
+  --color-bg-secondary: #2a2a2a;
+  --color-bg-tertiary: #333333;
+  
+  /* Glass Colors */
+  --glass-light: rgba(246, 240, 236, 0.6);
+  --glass-dark: rgba(30, 30, 30, 0.6);
+  
+  /* Surface Colors */
+  --color-surface-primary: #2a2a2a;
+  --color-surface-secondary: #333333;
+  --color-surface-tertiary: #404040;
+  
+  /* Border Colors */
+  --color-border-primary: #4D4B55;
+  --color-border-secondary: #6E6A86;
+  --color-border-tertiary: #7a7a7a;
+  
+  /* Text Colors */
+  --color-text-primary: #E6E1CF;
+  --color-text-secondary: #6E6A86;
+  --color-text-tertiary: #5a5a5a;
+  --color-text-quaternary: #4a4a4a;
+  
+  /* Primary Accent Colors */
+  --color-accent-mauve: #DDB6F2;
+  --color-accent-peach: #F5C2E7;
+  --color-accent-latte: #F4DBD6;
+  
+  /* Secondary Accent Colors */
+  --color-accent-green: #ABE9B3;
+  --color-accent-sky: #89DCEB;
+  --color-accent-sapphire: #74C7EC;
+  
+  /* Semantic Colors */
+  --color-success-primary: #ABE9B3;
+  --color-success-secondary: #9FE6A8;
+  
+  --color-warning-primary: #F5C2E7;
+  --color-warning-secondary: #F8D4E7;
+  
+  --color-error-primary: #F28FAD;
+  --color-error-secondary: #F5A3B8;
+  
+  /* Glass/Vibrancy */
+  --glass-bg-opacity: 0.6;
+  --glass-blur: 16px;
+  --glass-saturation: 150%;
+  --glass-border-opacity: 0.3;
+  --glass-ring-opacity: 0.5;
+}
+
+/* ===== SPACING SYSTEM ===== */
+:root {
+  /* Base spacing unit (4px) */
+  --space-0: 0;
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem;  /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem;    /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem;  /* 24px */
+  --space-8: 2rem;    /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem;   /* 48px */
+  --space-16: 4rem;   /* 64px */
+  --space-20: 5rem;   /* 80px */
+  --space-24: 6rem;   /* 96px */
+}
+
+/* ===== TYPOGRAPHY SYSTEM ===== */
+:root {
+  /* Font Family */
+  --font-family-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  
+  /* Line Heights */
+  --line-height-tight: 1.25;   /* Headings */
+  --line-height-snug: 1.375;  /* Small text */
+  --line-height-normal: 1.5;  /* Body text */
+  --line-height-relaxed: 1.6; /* Relaxed body */
+  
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Letter Spacing */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+}
+
+/* ===== BORDER RADIUS SYSTEM ===== */
+:root {
+  --radius-none: 0;
+  --radius-sm: 0.125rem;   /* 2px */
+  --radius-base: 0.25rem;  /* 4px */
+  --radius-md: 0.375rem;   /* 6px */
+  --radius-lg: 0.5rem;     /* 8px */
+  --radius-xl: 0.75rem;    /* 12px */
+  --radius-2xl: 1rem;      /* 16px */
+  --radius-3xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+}
+
+/* ===== SHADOW SYSTEM ===== */
+:root {
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+/* ===== TRANSITION SYSTEM ===== */
+:root {
+  --transition-fast: 150ms ease-out;
+  --transition-base: 200ms ease-out;
+  --transition-slow: 300ms ease-out;
+  
+  --transition-transform: transform var(--transition-base);
+  --transition-colors: color var(--transition-base), background-color var(--transition-base), border-color var(--transition-base);
+  --transition-opacity: opacity var(--transition-base);
+}
+
+/* ===== Z-INDEX SYSTEM ===== */
+:root {
+  --z-dropdown: 800;
+  --z-markers: 800;
+  --z-sticky: 850;
+  --z-panels: 900;
+  --z-help: 900;
+  --z-topbar: 1000;
+  --z-modal: 1050;
+}
+
+/* ===== PERFORMANCE & FALLBACKS ===== */
+@supports not (backdrop-filter: blur(4px)) {
+  .glass-light, .glass-dark { 
+    background-color: rgba(246,240,236,0.75); 
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none; 
+  }
+}
+
+/* ===== ANIMATION SYSTEM ===== */
+:root {
+  --transition-fast: 150ms ease-out;
+  --transition-base: 200ms ease-out;
+  --transition-slow: 250ms ease-out;
+  
+  --transition-transform: transform var(--transition-base);
+  --transition-colors: color var(--transition-base), background-color var(--transition-base), border-color var(--transition-base);
+  --transition-opacity: opacity var(--transition-base);
+}
