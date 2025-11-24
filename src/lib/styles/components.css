@@ -2,32 +2,38 @@
 
 /* ===== LAYERING CLASSES ===== */
 .ui-panels {
+  position: relative;
   z-index: var(--z-panels);
 }
 
 .ui-topbar {
+  position: relative;
   z-index: var(--z-topbar);
 }
 
 .ui-help {
+  position: relative;
   z-index: var(--z-help);
 }
 
 .ui-markers {
+  position: relative;
   z-index: var(--z-markers);
 }
 
 /* ===== GLASS/VIBRANCY COMPONENTS ===== */
 .glass-panel {
-  background-color: var(--glass-light);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-  backdrop-filter: blur(16px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
+  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.1);
+  backdrop-filter: blur(20px) saturate(180%) brightness(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 8px 32px rgba(31, 38, 135, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
   transition: var(--transition-transform);
   position: relative;
+  border-radius: var(--radius-xl);
 }
 
 .glass-panel::before {
@@ -37,19 +43,30 @@
   border-radius: inherit;
   background: linear-gradient(
     135deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-theme="dark"] .glass-panel {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .glass-panel::before {
+  background: linear-gradient(
+    135deg,
     rgba(255, 255, 255, 0.1) 0%,
     rgba(255, 255, 255, 0.05) 50%,
     rgba(255, 255, 255, 0) 100%
   );
-  pointer-events: none;
-}
-
-[data-theme="dark"] .glass-panel {
-  background-color: var(--glass-dark);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .glass-panel--ring {
