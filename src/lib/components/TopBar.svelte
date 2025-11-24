@@ -6,77 +6,79 @@
 	export let theme: ThemePreference = 'system';
 	export let isPreferencesOpen = false;
 	export let isHelpOpen = false;
-	export let isLocationPanelOpen = true;
 	export let onSelectTheme: (preference: ThemePreference) => void = () => {};
-	export let onToggleLocationPanel: () => void = () => {};
 	export let onTogglePreferences: () => void = () => {};
 	export let onToggleHelp: () => void = () => {};
 	export let className = '';
 </script>
 
 <header
-	class={`pointer-events-auto flex w-full flex-col gap-3 rounded-2xl bg-white/95 p-4 shadow-sm ring-1 ring-slate-200 backdrop-blur sm:flex-row sm:items-center sm:justify-between ${className}`}
+	class={`glass-panel glass-panel--ring panel--md glass-panel--interactive flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between ${className}`}
 >
-	<div class="flex flex-1 items-center gap-3">
-		<button
-			type="button"
-			on:click={onToggleLocationPanel}
-			class={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 ${
-				isLocationPanelOpen ? 'border-sky-400 bg-sky-100 text-sky-700' : 'border-slate-300'
-			}`}
-			aria-pressed={isLocationPanelOpen}
-		>
-			<span class="mr-2" aria-hidden="true">📍</span>
-			{isLocationPanelOpen ? 'Hide details' : 'Show details'}
-		</button>
+	<div class="flex flex-1 items-center gap-2">
 		<div class="flex flex-col">
-			<span class="text-sm font-semibold uppercase tracking-wide text-slate-900">{brandTitle}</span>
+			<span class="text-heading-4" style="font-size: var(--font-size-xs); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">{brandTitle}</span>
 			{#if subtitle}
-				<span class="text-xs text-slate-500">{subtitle}</span>
+				<span class="text-caption text-caption--tertiary">{subtitle}</span>
 			{/if}
 		</div>
 	</div>
 
-	<nav class="flex flex-wrap items-center gap-2" aria-label="Theme preference">
+	<nav class="flex flex-wrap items-center gap-1" aria-label="Theme preference">
 		{#each THEME_OPTIONS as option}
 			{#if onSelectTheme}
 				<button
 					type="button"
 					on:click={() => onSelectTheme(option.value)}
-					class={`rounded-full border px-3 py-1 text-sm font-medium transition ${
+					class={`btn btn--sm ${
 						theme === option.value
-							? 'border-sky-500 bg-sky-100 text-sky-700'
-							: 'border-slate-300 text-slate-700 hover:bg-slate-100'
+							? 'btn--primary'
+							: 'btn--secondary'
 					}`}
-					aria-pressed={theme === option.value}
+					role="radio"
+					aria-checked={theme === option.value}
 				>
-					<span class="mr-2" aria-hidden="true">{option.icon}</span>
-					{option.label}
+					<span class="flex items-center gap-1">
+						<span aria-hidden="true">{option.icon}</span>
+						{option.label}
+					</span>
 				</button>
 			{/if}
 		{/each}
 	</nav>
 
-	<div class="flex items-center gap-2">
+	<div class="flex items-center gap-1">
 		<button
 			type="button"
 			on:click={onTogglePreferences}
-			class={`rounded-full border px-3 py-1 text-sm font-medium transition hover:bg-slate-100 ${
-				isPreferencesOpen ? 'border-sky-500 bg-sky-100 text-sky-700' : 'border-slate-300 text-slate-700'
+			class={`btn btn--sm ${
+				isPreferencesOpen 
+					? 'btn--primary' 
+					: 'btn--secondary'
 			}`}
-			aria-pressed={isPreferencesOpen}
+			role="switch"
+			aria-checked={isPreferencesOpen}
 		>
-			Preferences
+			<span class="flex items-center gap-1">
+				<span>{isPreferencesOpen ? '✓' : '⚙️'}</span>
+				Preferences
+			</span>
 		</button>
 		<button
 			type="button"
 			on:click={onToggleHelp}
-			class={`rounded-full border px-3 py-1 text-sm font-medium transition hover:bg-slate-100 ${
-				isHelpOpen ? 'border-sky-500 bg-sky-100 text-sky-700' : 'border-slate-300 text-slate-700'
+			class={`btn btn--sm ${
+				isHelpOpen 
+					? 'btn--primary' 
+					: 'btn--secondary'
 			}`}
-			aria-pressed={isHelpOpen}
+			role="switch"
+			aria-checked={isHelpOpen}
 		>
-			Help
+			<span class="flex items-center gap-1">
+				<span>{isHelpOpen ? '✓' : '?'}</span>
+				Help
+			</span>
 		</button>
 	</div>
 </header>

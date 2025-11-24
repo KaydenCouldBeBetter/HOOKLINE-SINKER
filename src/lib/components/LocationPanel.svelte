@@ -8,60 +8,62 @@
 
 {#if location}
 	<aside
-		class={`pointer-events-auto w-full max-w-md space-y-4 rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm ${className}`}
+		class={`glass-panel glass-panel--ring panel--lg space-y-6 ${className}`}
 	>
 		<header class="flex items-start justify-between gap-3">
 			<div>
-				<h2 class="text-base font-semibold text-slate-900">{location.name}</h2>
+				<h2 class="text-heading-3">{location.name}</h2>
 				{#if location.subtitle}
-					<p class="text-xs text-slate-500">{location.subtitle}</p>
+					<p class="text-caption text-caption--tertiary">{location.subtitle}</p>
 				{/if}
 				{#if location.address}
-					<p class="mt-1 text-xs text-slate-500">{location.address}</p>
+					<p class="text-caption text-caption--tertiary" style="margin-top: var(--space-1);">{location.address}</p>
 				{/if}
 			</div>
 			<button
 				type="button"
 				on:click={onClose}
-				class="rounded-full border border-slate-200 px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100"
+				class="btn btn--ghost"
+				style="padding: 12px;"
 				aria-label="Close location panel"
 			>
-				&times;
+				<span style="font-size: 18px; line-height: 1;">×</span>
 			</button>
 		</header>
 
 		{#if location.galleryImage}
-			<div class="space-y-2">
-				<p class="text-xs font-medium uppercase tracking-wide text-slate-500">Gallery</p>
-				<img
-					src={location.galleryImage}
-					alt={location.galleryLabel ?? location.name}
-					class="h-32 w-full rounded-lg object-cover"
-				/>
+			<div class="space-y-3" style="gap: var(--space-3);">
+				<p class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Gallery</p>
+				<div class="card overflow-hidden">
+					<img
+						src={location.galleryImage}
+						alt={location.galleryLabel ?? location.name}
+						class="h-40 w-full object-cover hover:scale-105 transition-transform duration-300 ease-out"
+					/>
+					<div class="absolute inset-0 bg-gradient-to-t from-[rgb(var(--color-bg-primary)/0.2)] to-transparent pointer-events-none"></div>
+				</div>
 			</div>
 		{/if}
 
 		{#if location.species?.length}
-			<section class="space-y-2">
-				<h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500">Species</h3>
-				<div class="flex flex-wrap gap-2">
+			<section class="space-y-3" style="gap: var(--space-3);">
+				<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Species</h3>
+				<div class="flex flex-wrap gap-2" style="gap: var(--space-2);">
 					{#each location.species as species}
-						<span class="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600">
-							{species}
-						</span>
+						<span class="badge badge--primary">{species}</span>
 					{/each}
 				</div>
 			</section>
 		{/if}
 
 		{#if location.details?.length}
-			<section class="space-y-2">
-				<h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500">Details</h3>
-				<ul class="space-y-1">
+			<section class="space-y-3" style="gap: var(--space-3);">
+				<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Details</h3>
+				<ul class="space-y-2" style="gap: var(--space-2);">
 					{#each location.details as item}
-						<li class="flex items-center justify-between text-xs text-slate-600">
-							<span class="font-medium text-slate-500">{item.label}</span>
-							<span>{item.value}</span>
+						<li class="card card--interactive flex items-center justify-between">
+							<span class="text-body text-body--secondary">{item.label}</span>
+							<span class="text-body font-medium">{item.value}</span>
 						</li>
 					{/each}
 				</ul>
@@ -69,13 +71,13 @@
 		{/if}
 
 		{#if location.conditions?.length}
-			<section class="space-y-2">
-				<h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500">Current conditions</h3>
-				<ul class="space-y-1">
+			<section class="space-y-3" style="gap: var(--space-3);">
+				<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Current conditions</h3>
+				<ul class="space-y-2" style="gap: var(--space-2);">
 					{#each location.conditions as item}
-						<li class="flex items-center justify-between text-xs text-slate-600">
-							<span class="font-medium text-slate-500">{item.label}</span>
-							<span>{item.value}</span>
+						<li class="card card--interactive flex items-center justify-between border-[rgb(var(--color-success-primary)/0.3)] bg-[rgb(var(--color-success-primary)/0.08)]">
+							<span class="text-body text-body--secondary">{item.label}</span>
+							<span class="text-body font-medium">{item.value}</span>
 						</li>
 					{/each}
 				</ul>
@@ -83,7 +85,7 @@
 		{/if}
 	</aside>
 {:else}
-	<aside class={`pointer-events-auto w-full max-w-md rounded-xl border border-dashed border-slate-200 bg-white p-4 text-sm text-slate-500 ${className}`}>
+	<aside class={`glass-panel glass-panel--ring panel--lg text-body text-body--secondary ${className}`}>
 		Select a location to view details.
 	</aside>
 {/if}

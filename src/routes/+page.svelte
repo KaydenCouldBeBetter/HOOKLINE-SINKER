@@ -1,27 +1,37 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import MapManager from '$lib/components/MapManager.svelte';
 	import ThemeManager from '$lib/components/ThemeManager.svelte';
 	import StateManager from '$lib/components/StateManager.svelte';
-	import UIManager from '$lib/components/UIManager.svelte';
+	import UIState from '$lib/components/UIState.svelte';
 	import TopBar from '$lib/components/TopBar.svelte';
 	import LocationPanel from '$lib/components/LocationPanel.svelte';
 	import PreferencesPanel from '$lib/components/PreferencesPanel.svelte';
 	import HelpPanel from '$lib/components/HelpPanel.svelte';
 	import type { LocationDetails } from '$lib/types/location';
+	import type { MapStyle } from '$lib/config/map';
 
+	// Map state
 	let mapContainer: HTMLDivElement | null = null;
+	let mapStyle: MapStyle = 'streets';
 
 	// Theme state
-	let theme: 'light' | 'dark' = 'dark';
-	let themeSummary = '';
+	let theme: 'system' | 'light' | 'dark' = 'system';
+	let resolvedTheme: 'light' | 'dark' = 'dark';
+	let handleThemeSelect: (preference: 'system' | 'light' | 'dark') => void = (preference) => {
+		theme = preference;
+	};
+	
+	// Reactive theme summary
+	$: themeSummary = theme === 'system'
+		? `System · ${resolvedTheme.charAt(0).toUpperCase()}${resolvedTheme.slice(1)}`
+		: `${theme === 'dark' ? 'Dark' : 'Light'} mode`;
 
 	// UI state
 	let isPreferencesOpen = true;
 	let isHelpOpen = true;
 	let isLocationPanelOpen = true;
 
-	// State data - will be managed by StateManager
+	// App state
 	let speciesOptions: string[] = [];
 	let selectedSpecies: string[] = [];
 	let crowdOptions: ('Quiet' | 'Moderate' | 'Busy')[] = [];
@@ -31,75 +41,18 @@
 	let favoriteLocations: { name: string; saved: boolean }[] = [];
 	let activeLocation: LocationDetails | undefined;
 
-	// Help data
-	const shortcutTips = [
-		{ key: 'T', description: 'Cycle theme preferences' },
-		{ key: 'P', description: 'Open preferences panel' },
-		{ key: 'H', description: 'Toggle help panel' },
-		{ key: 'Esc', description: 'Close current overlay' }
-	];
-
-	const explorationTips = [
-		{
-			title: 'Drag to explore',
-			description: 'Click and drag the map to survey nearby waters, docks, and marinas.'
-		},
-		{
-			title: 'Zoom controls',
-			description: 'Use scroll, pinch, or the on-map buttons to zoom in and out.'
-		},
-		{
-			title: 'Reset focus',
-			description: 'Double-click anywhere to recentre on your chosen marker.'
-		}
-	];
-
 	// Event handlers
-	const handleThemeChange = (event: CustomEvent) => {
-		({ theme } = event.detail);
+	const togglePreferences = () => {
+		isPreferencesOpen = !isPreferencesOpen;
 	};
 
-	const handlePreferencesToggle = (event: CustomEvent) => {
-		isPreferencesOpen = event.detail;
+	const toggleHelp = () => {
+		isHelpOpen = !isHelpOpen;
 	};
 
-	const handleHelpToggle = (event: CustomEvent) => {
-		isHelpOpen = event.detail;
+	const toggleLocation = () => {
+		isLocationPanelOpen = !isLocationPanelOpen;
 	};
-
-	const handleLocationToggle = (event: CustomEvent) => {
-		isLocationPanelOpen = event.detail;
-	};
-
-	const handleSpeciesChange = (event: CustomEvent) => {
-		selectedSpecies = event.detail;
-	};
-
-	const handleCrowdChange = (event: CustomEvent) => {
-		crowdPreference = event.detail;
-	};
-
-	const handleWeatherChange = (event: CustomEvent) => {
-		weatherPreferences = event.detail;
-	};
-
-	const handleFavoriteChange = (event: CustomEvent) => {
-		favoriteLocations = event.detail;
-	};
-
-	const handleLocationChange = (event: CustomEvent) => {
-		activeLocation = event.detail;
-	};
-
-	const handleThemeSelect = (preference: string) => {
-		// This will be handled by ThemeManager
-	};
-
-	const cycleThemePreference = () => {
-		// This will be handled by ThemeManager
-	};
-
-	$: themeSummary = `${theme === 'dark' ? 'Dark' : 'Light'} mode`;
 </script>
 
 <svelte:head>
@@ -107,9 +60,12 @@
 </svelte:head>
 
 <!-- Managers (invisible, handle state and logic) -->
-<ThemeManager
-	bind:theme
-	on:themeChange={handleThemeChange}
+<ThemeManager bind:theme bind:resolvedTheme />
+
+<UIState 
+	bind:isPreferencesOpen 
+	bind:isHelpOpen 
+	bind:isLocationPanelOpen 
 />
 
 <StateManager
@@ -121,100 +77,94 @@
 	bind:weatherPreferences
 	bind:favoriteLocations
 	bind:activeLocation
-	on:speciesChange={handleSpeciesChange}
-	on:crowdChange={handleCrowdChange}
-	on:weatherChange={handleWeatherChange}
-	on:favoriteChange={handleFavoriteChange}
-	on:locationChange={handleLocationChange}
 />
 
-<UIManager
-	bind:isPreferencesOpen
-	bind:isHelpOpen
-	bind:isLocationPanelOpen
-	on:preferencesToggle={handlePreferencesToggle}
-	on:helpToggle={handleHelpToggle}
-	on:locationToggle={handleLocationToggle}
-/>
-
-<div class="relative h-screen w-screen bg-slate-900">
+<div class="relative h-screen w-screen" style="background-color: rgb(var(--color-bg-primary));">
 	<!-- Map -->
-	<MapManager bind:theme bind:mapContainer />
+	<MapManager bind:mapStyle={mapStyle} bind:mapContainer />
 
 	<!-- UI Layer -->
-	<div class="pointer-events-none absolute inset-0 flex flex-col z-10">
-		<div class="flex justify-center px-4 pt-4">
-			<TopBar
-				className="w-full md:max-w-4xl"
-				brandTitle="Hookline Sinker"
-				subtitle={themeSummary}
-				theme={theme}
-				isPreferencesOpen={isPreferencesOpen}
-				isHelpOpen={isHelpOpen}
-				isLocationPanelOpen={isLocationPanelOpen}
-				onSelectTheme={handleThemeSelect}
-				onToggleLocationPanel={() => isLocationPanelOpen = !isLocationPanelOpen}
-				onTogglePreferences={() => isPreferencesOpen = !isPreferencesOpen}
-				onToggleHelp={() => isHelpOpen = !isHelpOpen}
-			/>
+	<div class="pointer-events-none absolute inset-0 z-10">
+		<!-- Left Panel - Full Height -->
+		<div class="absolute left-0 top-0 bottom-0 w-80 pointer-events-auto">
+			{#if isLocationPanelOpen && activeLocation}
+				<LocationPanel
+					location={activeLocation}
+					onClose={() => isLocationPanelOpen = false}
+					className="h-full rounded-l-none rounded-r-xl border-l-0"
+				/>
+			{/if}
 		</div>
-		<div class="flex-1 px-4 pb-4">
-			<div class="flex h-full flex-col gap-4 md:flex-row md:items-start md:justify-between">
-				<div class="order-last md:order-0 md:max-w-sm md:shrink-0">
-					{#if isLocationPanelOpen && activeLocation}
-						<LocationPanel
-							location={activeLocation}
-							onClose={() => isLocationPanelOpen = false}
-							className="pointer-events-auto w-full md:w-80"
-						/>
-					{/if}
-				</div>
-				<div class="flex-1"></div>
-				<div class="flex flex-col gap-4 md:max-w-sm md:shrink-0">
-					{#if isPreferencesOpen}
-						<PreferencesPanel
-							speciesOptions={speciesOptions}
-							selectedSpecies={selectedSpecies}
-							onToggleSpecies={(value: string) => {
-								selectedSpecies = selectedSpecies.includes(value)
-									? selectedSpecies.filter((item) => item !== value)
-									: [...selectedSpecies, value];
-							}}
-							crowdOptions={crowdOptions}
-							crowdPreference={crowdPreference}
-							onSelectCrowd={(value: string) => crowdPreference = value as 'Quiet' | 'Moderate' | 'Busy'}
-							weatherOptions={weatherOptions}
-							weatherPreferences={weatherPreferences}
-							onToggleWeather={(value: string) => {
-								const isActive = weatherPreferences.includes(value as 'Sunny' | 'Cloudy' | 'Rainy' | 'Any Weather');
-								if (value === 'Any Weather') {
-									weatherPreferences = isActive ? [] : ['Any Weather'];
-									return;
-								}
-								const filtered = weatherPreferences.filter((item) => item !== 'Any Weather') as ('Sunny' | 'Cloudy' | 'Rainy' | 'Any Weather')[];
-								weatherPreferences = isActive
-									? filtered.filter((item) => item !== value as 'Sunny' | 'Cloudy' | 'Rainy' | 'Any Weather')
-									: [...filtered, value as 'Sunny' | 'Cloudy' | 'Rainy' | 'Any Weather'];
-							}}
-							favoriteLocations={favoriteLocations}
-							onToggleFavorite={(index: number) => {
-								favoriteLocations = favoriteLocations.map((location, i) =>
-									i === index ? { ...location, saved: !location.saved } : location
-								);
-							}}
-							onClose={() => isPreferencesOpen = false}
-							className="pointer-events-auto w-full md:w-80"
-						/>
-					{/if}
-					{#if isHelpOpen}
+		
+		<!-- Right Panel - Full Height -->
+		<div class="absolute right-0 top-0 bottom-0 w-80 pointer-events-auto">
+			{#if isPreferencesOpen}
+				<PreferencesPanel
+					speciesOptions={speciesOptions}
+					selectedSpecies={selectedSpecies}
+					onToggleSpecies={(value: string) => {
+						selectedSpecies = selectedSpecies.includes(value)
+							? selectedSpecies.filter((item) => item !== value)
+							: [...selectedSpecies, value];
+					}}
+					crowdOptions={crowdOptions}
+					crowdPreference={crowdPreference}
+					onSelectCrowd={(value: string) => crowdPreference = value as 'Quiet' | 'Moderate' | 'Busy'}
+					weatherOptions={weatherOptions}
+					weatherPreferences={weatherPreferences}
+					onToggleWeather={(value: string) => {
+						const isActive = weatherPreferences.includes(value as 'Sunny' | 'Cloudy' | 'Rainy' | 'Any Weather');
+						if (value === 'Any Weather') {
+							weatherPreferences = isActive ? [] : ['Any Weather'];
+							return;
+						}
+						const filtered = weatherPreferences.filter((item) => item !== 'Any Weather') as ('Sunny' | 'Cloudy' | 'Rainy' | 'Any Weather')[];
+						weatherPreferences = isActive
+							? filtered.filter((item) => item !== value as 'Sunny' | 'Cloudy' | 'Rainy' | 'Any Weather')
+							: [...filtered, value as 'Sunny' | 'Cloudy' | 'Rainy' | 'Any Weather'];
+					}}
+					favoriteLocations={favoriteLocations}
+					mapStyle={mapStyle}
+					onSelectMapStyle={(style: MapStyle) => mapStyle = style}
+					onToggleFavorite={(index: number) => {
+						favoriteLocations = favoriteLocations.map((location, i) =>
+							i === index ? { ...location, saved: !location.saved } : location
+						);
+					}}
+					onClose={() => isPreferencesOpen = false}
+					className="h-full rounded-r-none rounded-l-xl border-r-0"
+				/>
+			{/if}
+		</div>
+		
+		<!-- Map Area Controls -->
+		<div class="absolute left-80 right-80 top-0 bottom-0 pointer-events-none">
+			<!-- Top Small Panel - Theme Controls -->
+			<div class="pointer-events-auto flex justify-center">
+				<TopBar
+					className="w-fit"
+					brandTitle="Hookline Sinker"
+					subtitle={themeSummary}
+					theme={resolvedTheme}
+					isPreferencesOpen={isPreferencesOpen}
+					isHelpOpen={isHelpOpen}
+					onSelectTheme={handleThemeSelect}
+					onTogglePreferences={togglePreferences}
+					onToggleHelp={toggleHelp}
+				/>
+			</div>
+			
+			<!-- Bottom Small Panel - Additional Controls (if needed) -->
+			<div class="absolute bottom-0 left-0 right-0 pointer-events-auto">
+				<!-- This could be for map controls, legends, etc. -->
+				{#if isHelpOpen}
+					<div class="w-fit mx-auto" style="margin-bottom: 80px; margin-left: 20px;">
 						<HelpPanel
-							shortcuts={shortcutTips}
-							tips={explorationTips}
 							onClose={() => isHelpOpen = false}
-							className="pointer-events-auto w-full md:w-72"
+							className="max-h-48 overflow-y-auto"
 						/>
-					{/if}
-				</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>

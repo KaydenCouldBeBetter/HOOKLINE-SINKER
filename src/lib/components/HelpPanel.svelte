@@ -5,30 +5,31 @@
 	export let className = '';
 </script>
 
-<aside class={`pointer-events-auto w-full max-w-md space-y-4 rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm ${className}`}>
+<aside class={`glass-panel glass-panel--ring panel--lg space-y-6 ${className}`}>
 	<header class="flex items-start justify-between">
-		<div>
-			<h2 class="text-base font-semibold text-slate-900">Help &amp; controls</h2>
-			<p class="text-xs text-slate-500">Quick tips for navigating the map.</p>
+		<div class="rounded-lg p-2" style="background-color: rgba(255, 255, 255, 0.1);">
+			<h2 class="text-heading-3" style="color: rgb(var(--color-text-primary)); text-shadow: 0 1px 2px rgba(0,0,0,0.1);">Help &amp; controls</h2>
+			<p class="text-caption text-caption--tertiary" style="margin-top: var(--space-1);">Quick tips for navigating the map.</p>
 		</div>
 		<button
 			type="button"
 			on:click={onClose}
-			class="rounded-full border border-slate-200 px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100"
+			class="btn btn--ghost"
+			style="padding: 12px;"
 			aria-label="Close help panel"
 		>
-			&times;
+			<span style="font-size: 18px; line-height: 1;">×</span>
 		</button>
 	</header>
 
 	{#if shortcuts.length}
-		<section class="space-y-2">
-			<h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500">Shortcuts</h3>
-			<ul class="space-y-1">
+		<section class="space-y-3" style="gap: var(--space-3);">
+			<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Shortcuts</h3>
+			<ul class="space-y-1" style="gap: var(--space-1);">
 				{#each shortcuts as shortcut}
-					<li class="flex items-center justify-between rounded border border-slate-200 px-3 py-1 text-xs text-slate-600">
-						<span class="font-mono text-[11px] font-semibold uppercase text-slate-500">{shortcut.key}</span>
-						<span>{shortcut.description}</span>
+					<li class="card card--interactive flex items-center justify-between">
+						<span class="badge badge--primary" style="font-family: monospace; font-size: 11px; font-weight: var(--font-weight-bold); text-transform: uppercase;">{shortcut.key}</span>
+						<span class="text-body text-body--secondary">{shortcut.description}</span>
 					</li>
 				{/each}
 			</ul>
@@ -36,13 +37,13 @@
 	{/if}
 
 	{#if tips.length}
-		<section class="space-y-2">
-			<h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500">Map tips</h3>
-			<ul class="space-y-2">
+		<section class="space-y-3" style="gap: var(--space-3);">
+			<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Map tips</h3>
+			<ul class="space-y-2" style="gap: var(--space-2);">
 				{#each tips as tip}
-					<li class="rounded border border-slate-200 px-3 py-2">
-						<p class="text-xs font-semibold text-slate-700">{tip.title}</p>
-						<p class="text-xs text-slate-600">{tip.description}</p>
+					<li class="card card--interactive">
+						<p class="text-heading-4">{tip.title}</p>
+						<p class="text-body text-body--secondary" style="margin-top: var(--space-1);">{tip.description}</p>
 					</li>
 				{/each}
 			</ul>

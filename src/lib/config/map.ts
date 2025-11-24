@@ -1,11 +1,42 @@
 import type { ControlPosition, LngLatLike, MapboxOptions } from 'mapbox-gl';
 
-export const MAP_STYLE_LIGHT = 'mapbox://styles/mapbox/streets-v12';
-export const MAP_STYLE_DARK = 'mapbox://styles/mapbox/dark-v11';
-export const MAP_STYLES: Record<'light' | 'dark', string> = {
-	light: MAP_STYLE_LIGHT,
-	dark: MAP_STYLE_DARK
+export type MapStyle = 'streets' | 'dark' | 'light' | 'outdoors' | 'satellite' | 'satellite-streets';
+
+export const MAP_STYLES: Record<MapStyle, { url: string; name: string; description: string }> = {
+	streets: { 
+		url: 'mapbox://styles/mapbox/streets-v12', 
+		name: 'Streets', 
+		description: 'Default street map' 
+	},
+	dark: { 
+		url: 'mapbox://styles/mapbox/dark-v11', 
+		name: 'Dark', 
+		description: 'Dark theme streets' 
+	},
+	light: { 
+		url: 'mapbox://styles/mapbox/light-v11', 
+		name: 'Light', 
+		description: 'Light theme streets' 
+	},
+	outdoors: { 
+		url: 'mapbox://styles/mapbox/outdoors-v12', 
+		name: 'Outdoors', 
+		description: 'Terrain and hiking' 
+	},
+	satellite: { 
+		url: 'mapbox://styles/mapbox/satellite-v9', 
+		name: 'Satellite', 
+		description: 'Satellite imagery' 
+	},
+	'satellite-streets': { 
+		url: 'mapbox://styles/mapbox/satellite-streets-v12', 
+		name: 'Satellite Streets', 
+		description: 'Satellite with streets' 
+	}
 };
+
+export const MAP_STYLE_LIGHT = MAP_STYLES.light.url;
+export const MAP_STYLE_DARK = MAP_STYLES.dark.url;
 
 export const MAP_CENTER: LngLatLike = [-73.9857, 40.7484];
 export const MAP_ZOOM = 11;

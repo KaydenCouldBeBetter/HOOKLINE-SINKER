@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { onMount } from 'svelte';
 	import mapboxgl from 'mapbox-gl';
 	import 'mapbox-gl/dist/mapbox-gl.css';
 	import { env } from '$env/dynamic/public';
@@ -10,23 +10,24 @@
 		MAP_STYLES,
 		MISSING_TOKEN_HELP,
 		MISSING_TOKEN_MESSAGE,
-		NAVIGATION_CONTROL_POSITION
+		NAVIGATION_CONTROL_POSITION,
+		type MapStyle
 	} from '$lib/config/map';
 
-	export let theme: 'light' | 'dark' = 'dark';
+	export let mapStyle: MapStyle = 'streets';
 	export let mapContainer: HTMLDivElement | null = null;
+	export let onMapReady: ((map: mapboxgl.Map) => void) | null = null;
+	export let onMapError: ((error: string) => void) | null = null;
 
 	let mapInstance: mapboxgl.Map | null = null;
-	let currentMapStyle: 'light' | 'dark' | null = null;
-	let pendingMapStyle: 'light' | 'dark' | null = null;
+	let currentMapStyle: MapStyle | null = null;
+	let pendingMapStyle: MapStyle | null = null;
 	let mapError: string | null = null;
-
-	const dispatch = createEventDispatcher();
 
 	const accessToken = env[MAPBOX_TOKEN_ENV];
 
 	const syncMapStyle = () => {
-		const targetStyle = theme;
+		const targetStyle = mapStyle;
 		if (!targetStyle) return;
 		if (!mapInstance) {
 			pendingMapStyle = targetStyle;
@@ -39,7 +40,7 @@
 		const bearing = mapInstance.getBearing();
 		const pitch = mapInstance.getPitch();
 
-		mapInstance.setStyle(MAP_STYLES[targetStyle]);
+		mapInstance.setStyle(MAP_STYLES[targetStyle].url);
 		pendingMapStyle = targetStyle;
 
 		mapInstance.once('style.load', () => {
@@ -57,19 +58,23 @@
 	onMount(() => {
 		if (!accessToken) {
 			mapError = MISSING_TOKEN_MESSAGE;
+			onMapError?.(MISSING_TOKEN_MESSAGE);
 			return;
 		}
 
 		mapboxgl.accessToken = accessToken;
 		mapInstance = new mapboxgl.Map({
 			container: mapContainer!,
-			style: MAP_STYLES[theme],
+			style: MAP_STYLES[mapStyle].url,
 			...MAP_OPTIONS
 		});
-		currentMapStyle = theme;
+		currentMapStyle = mapStyle;
 		pendingMapStyle = null;
 
 		mapInstance.addControl(new mapboxgl.NavigationControl(), NAVIGATION_CONTROL_POSITION);
+		
+		// Notify parent when map is ready
+		onMapReady?.(mapInstance);
 
 		return () => {
 			mapInstance?.remove();
@@ -77,7 +82,7 @@
 		};
 	});
 
-	$: if (theme && mapInstance) {
+	$: if (mapStyle && mapInstance) {
 		syncMapStyle();
 	}
 
@@ -85,13 +90,13 @@
 </script>
 
 {#if mapError}
-	<section class="mx-auto flex h-full max-w-xl flex-col justify-center gap-4 p-8 text-center text-slate-100" role="alert" aria-live="polite">
-		<div class="rounded-2xl bg-slate-900/80 p-6 shadow-xl ring-1 ring-slate-700/40 backdrop-blur">
-			<h1 class="text-2xl font-semibold">Map unavailable</h1>
-			<p class="text-sm text-slate-300">{mapError}</p>
-			<p class="text-sm text-slate-300">
+	<section class="mx-auto flex h-full max-w-xl flex-col justify-center gap-4 p-8 text-center text-[rgb(var(--catppuccin-text))]" role="alert" aria-live="polite">
+		<div class="rounded-2xl bg-[rgb(var(--catppuccin-base)/0.8)] p-6 shadow-xl ring-1 ring-[rgb(var(--catppuccin-surface0)/0.4)] backdrop-blur">
+			<h1 class="text-2xl font-semibold text-[rgb(var(--catppuccin-text))]">Map unavailable</h1>
+			<p class="text-sm text-[rgb(var(--catppuccin-subtext1))]">{mapError}</p>
+			<p class="text-sm text-[rgb(var(--catppuccin-subtext1))]">
 				{MISSING_TOKEN_HELP.lead}
-				<code class="mx-1 inline-block rounded bg-slate-800 px-2 py-1 text-xs font-mono">{MAPBOX_TOKEN_ENV}</code>
+				<code class="mx-1 inline-block rounded bg-[rgb(var(--catppuccin-surface0))] px-2 py-1 text-xs font-mono text-[rgb(var(--catppuccin-text))]">{MAPBOX_TOKEN_ENV}</code>
 				{MISSING_TOKEN_HELP.trail}
 			</p>
 		</div>
