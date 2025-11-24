@@ -23,16 +23,15 @@
 			<button
 				type="button"
 				on:click={onClose}
-				class="btn btn--ghost"
-				style="padding: 12px;"
+				class="btn btn--icon"
 				aria-label="Close location panel"
 			>
-				<span style="font-size: 18px; line-height: 1;">×</span>
+				<span style="font-size: var(--font-size-lg); line-height: var(--line-height-tight);">×</span>
 			</button>
 		</header>
 
 		{#if location.galleryImage}
-			<div class="space-y-3" style="gap: var(--space-3);">
+			<div class="space-y-3">
 				<p class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Gallery</p>
 				<div class="card overflow-hidden">
 					<img
@@ -46,9 +45,9 @@
 		{/if}
 
 		{#if location.species?.length}
-			<section class="space-y-3" style="gap: var(--space-3);">
+			<section class="space-y-3">
 				<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Species</h3>
-				<div class="flex flex-wrap gap-2" style="gap: var(--space-2);">
+				<div class="flex flex-wrap gap-2">
 					{#each location.species as species}
 						<span class="badge badge--primary">{species}</span>
 					{/each}
@@ -57,9 +56,9 @@
 		{/if}
 
 		{#if location.details?.length}
-			<section class="space-y-3" style="gap: var(--space-3);">
+			<section class="space-y-3">
 				<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Details</h3>
-				<ul class="space-y-2" style="gap: var(--space-2);">
+				<ul class="space-y-2">
 					{#each location.details as item}
 						<li class="card card--interactive flex items-center justify-between">
 							<span class="text-body text-body--secondary">{item.label}</span>
@@ -71,9 +70,9 @@
 		{/if}
 
 		{#if location.conditions?.length}
-			<section class="space-y-3" style="gap: var(--space-3);">
+			<section class="space-y-3">
 				<h3 class="text-caption" style="font-weight: var(--font-weight-medium); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">Current conditions</h3>
-				<ul class="space-y-2" style="gap: var(--space-2);">
+				<ul class="space-y-2">
 					{#each location.conditions as item}
 						<li class="card card--interactive flex items-center justify-between border-[rgb(var(--color-success-primary)/0.3)] bg-[rgb(var(--color-success-primary)/0.08)]">
 							<span class="text-body text-body--secondary">{item.label}</span>

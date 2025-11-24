@@ -17,7 +17,7 @@
 >
 	<div class="flex flex-1 items-center gap-2">
 		<div class="flex flex-col">
-			<span class="text-heading-4" style="font-size: var(--font-size-xs); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase;">{brandTitle}</span>
+			<span class="text-heading-4" style="font-size: var(--font-size-xs); letter-spacing: var(--letter-spacing-wide); text-transform: uppercase; line-height: var(--line-height-tight);">{brandTitle}</span>
 			{#if subtitle}
 				<span class="text-caption text-caption--tertiary">{subtitle}</span>
 			{/if}
