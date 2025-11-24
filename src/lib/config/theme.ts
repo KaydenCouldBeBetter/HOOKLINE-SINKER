@@ -18,13 +18,13 @@ export const THEME_OPTIONS: Array<{
 	{
 		value: 'light',
 		label: 'Light',
-		description: 'Bright background, dark text',
-		icon: '☀️'
+		description: 'Catppuccin Latte theme',
+		icon: '☕'
 	},
 	{
 		value: 'dark',
 		label: 'Dark',
-		description: 'Dim background, light text',
+		description: 'Catppuccin Mocha theme',
 		icon: '🌙'
 	}
 ];

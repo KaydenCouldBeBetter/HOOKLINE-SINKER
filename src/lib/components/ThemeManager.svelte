@@ -1,87 +1,96 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { createEventDispatcher } from 'svelte';
-	import {
-		THEME_DEFAULT,
-		THEME_OPTIONS,
-		THEME_STORAGE_KEY,
-		type ThemePreference
-	} from '$lib/config/theme';
+	import { THEME_OPTIONS, THEME_STORAGE_KEY, type ThemePreference } from '$lib/config/theme';
 
-	export let theme: ThemePreference = THEME_DEFAULT;
+	export let theme: ThemePreference = 'system';
 	export let resolvedTheme: 'light' | 'dark' = 'dark';
-	
+
 	let mediaQuery: MediaQueryList | null = null;
-	const themeOrder: ThemePreference[] = THEME_OPTIONS.map((option) => option.value);
-	let localTheme = theme;
-	let localResolvedTheme = resolvedTheme;
 
-	const dispatch = createEventDispatcher();
-
-	const getEffectiveTheme = (preference: ThemePreference): 'light' | 'dark' => {
-		if (preference === 'system') {
-			return mediaQuery?.matches ? 'dark' : 'light';
+	const resolveTheme = (pref: ThemePreference): 'light' | 'dark' => {
+		if (pref === 'system') {
+			return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 		}
-		return preference;
+		return pref as 'light' | 'dark';
 	};
 
-	const applyTheme = (preference: ThemePreference) => {
-		localTheme = preference;
+	const applyTheme = () => {
+		const html = document.documentElement;
+		
+		// Remove existing theme classes
+		html.classList.remove('dark', 'light');
+		
+		// Add current theme class
+		if (resolvedTheme === 'dark') {
+			html.classList.add('dark');
+		} else {
+			html.classList.add('light');
+		}
+		
+		// Also set data-theme for CSS variables
+		html.dataset.theme = resolvedTheme;
+	};
+
+	const savePreference = (pref: ThemePreference) => {
 		try {
-			localStorage.setItem(THEME_STORAGE_KEY, preference);
+			localStorage.setItem(THEME_STORAGE_KEY, pref);
 		} catch (error) {
 			console.debug('Unable to persist theme preference', error);
 		}
-		localResolvedTheme = getEffectiveTheme(preference);
-		document.documentElement.dataset.theme = localResolvedTheme;
-		theme = localTheme;
-		resolvedTheme = localResolvedTheme;
-		dispatch('themeChange', { theme: localTheme, resolvedTheme: localResolvedTheme });
 	};
 
-	const handleSystemThemeChange = (event: MediaQueryListEvent) => {
-		if (localTheme === 'system') {
-			localResolvedTheme = event.matches ? 'dark' : 'light';
-			document.documentElement.dataset.theme = localResolvedTheme;
-			resolvedTheme = localResolvedTheme;
-			dispatch('themeChange', { theme: localTheme, resolvedTheme: localResolvedTheme });
-		}
-	};
-
-	const handleThemeSelect = (preference: ThemePreference) => {
-		if (preference === localTheme) return;
-		applyTheme(preference);
-	};
-
-	const cycleThemePreference = () => {
-		const currentIndex = themeOrder.indexOf(localTheme);
-		const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % themeOrder.length;
-		applyTheme(themeOrder[nextIndex]);
-	};
-
-	onMount(() => {
+	const loadPreference = () => {
 		try {
 			const stored = localStorage.getItem(THEME_STORAGE_KEY) as ThemePreference | null;
 			if (stored && ['system', 'light', 'dark'].includes(stored)) {
-				localTheme = stored;
+				theme = stored;
 			}
 		} catch (error) {
 			console.debug('Unable to read theme preference', error);
 		}
+	};
 
+	const handleThemeSelect = (preference: ThemePreference) => {
+		if (preference === theme) return;
+		theme = preference;
+		savePreference(preference);
+		applyTheme();
+	};
+
+	const cycleThemePreference = () => {
+		const currentIndex = THEME_OPTIONS.findIndex(option => option.value === theme);
+		const nextIndex = (currentIndex + 1) % THEME_OPTIONS.length;
+		const newTheme = THEME_OPTIONS[nextIndex].value;
+		theme = newTheme;
+		savePreference(newTheme);
+		applyTheme();
+	};
+
+	const handleSystemThemeChange = (event: MediaQueryListEvent) => {
+		if (theme === 'system') {
+			applyTheme();
+		}
+	};
+
+	onMount(() => {
+		loadPreference();
+		applyTheme();
+		
 		mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 		mediaQuery.addEventListener('change', handleSystemThemeChange);
-		applyTheme(localTheme);
 
 		return () => {
 			mediaQuery?.removeEventListener('change', handleSystemThemeChange);
 		};
 	});
 
-	$: activeThemeOption = THEME_OPTIONS.find((option) => option.value === localTheme) ?? THEME_OPTIONS[0];
-	$: themeSummary = localTheme === 'system'
-		? `${activeThemeOption.label} · ${localResolvedTheme.charAt(0).toUpperCase()}${localResolvedTheme.slice(1)}`
-		: `${activeThemeOption.label} mode`;
+	// Apply theme whenever preference changes
+	$: if (theme) {
+		applyTheme();
+	}
 
-	export { handleThemeSelect, cycleThemePreference };
+	$: activeThemeOption = THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[0];
+	$: themeSummary = theme === 'system'
+		? `${activeThemeOption.label} · ${resolvedTheme.charAt(0).toUpperCase()}${resolvedTheme.slice(1)}`
+		: `${activeThemeOption.label} mode`;
 </script>
