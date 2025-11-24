@@ -94,6 +94,49 @@ export interface LocationSpecies {
     created_at?: string;
 }
 
+// Weather/Fishing Types
+
+export interface TideInfo {
+    tide_time: string;
+    tide_height_mt: string;
+    tide_type: "HIGH" | "LOW";
+}
+
+export interface FishingConditions {
+    location: {
+        name: string;
+        lat: number;
+        lon: number;
+    };
+    forecast: Array<{
+        date: string;
+        tides: TideInfo[];
+        moonPhase: string;
+        moonIllumination: number;
+        sunrise: string;
+        sunset: string;
+        summary: {
+            maxTemp: number;
+            minTemp: number;
+            maxWind: number;
+            precipitation: number;
+            condition: string;
+        };
+        hourly: Array<{
+            time: string;
+            temp: number;
+            waterTemp: number;
+            windSpeed: number;
+            windDir: string;
+            waveHeight: number;
+            swellHeight: number;
+            visibility: number;
+            condition: string;
+            precipitation: number;
+        }>;
+    }>;
+}
+
 export type Success<T> = {
     ok: true
     value: any
