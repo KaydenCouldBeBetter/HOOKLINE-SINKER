@@ -1,6 +1,6 @@
 import { Database } from 'bun:sqlite'
 
-export const db = new Database(process.env.DB_PATH || 'db.sqlite')
+export const db = new Database(process.env.DB_PATH || 'server/database/db.sqlite')
 
 // Performance optimization PRAGMAs
 export function initializeDatabase() {
