@@ -1,1 +1,25 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+@layer base {
+	:global(html, body, #svelte) {
+		height: 100%;
+	}
+
+	:global(body) {
+		margin: 0;
+		font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		background-color: #0f172a;
+		color: #e2e8f0;
+	}
+
+	:global(code) {
+		font-family: 'Fira Code', 'SFMono-Regular', ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+			monospace;
+	}
+
+	:global(button) {
+		font: inherit;
+	}
+}
