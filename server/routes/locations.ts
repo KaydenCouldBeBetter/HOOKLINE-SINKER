@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../database/connection';
 import type { Location } from '../../shared/types';
+import {validateRadius} from "../utils";
 
 const router = Router();
 
@@ -69,6 +70,38 @@ function getLocationsByBounds(minLat: number, maxLat: number, minLng: number, ma
     return stmt.all(minLat, maxLat, minLng, maxLng) as Location[];
 }
 
+// Calculate distance between two points using Haversine formula
+// Returns distance in miles
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 3959;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+// Get all locations within a radius (in miles) of a point
+function getLocationsWithinRadius(latitude: number, longitude: number, radiusMiles: number): Location[] {
+    const stmt = db.prepare(`
+        SELECT *,
+        (3959 * acos(
+            cos(? * 3.141592653589793 / 180) *
+            cos(latitude * 3.141592653589793 / 180) *
+            cos((longitude - ?) * 3.141592653589793 / 180) +
+            sin(? * 3.141592653589793 / 180) *
+            sin(latitude * 3.141592653589793 / 180)
+        )) AS distance
+        FROM locations
+        WHERE distance <= ?
+        ORDER BY distance
+    `);
+    return stmt.all(latitude, longitude, latitude, radiusMiles) as Location[];
+}
+
 // Update a location
 function updateLocation(location_id: number, updates: Partial<Location>): boolean {
     const fields = Object.keys(updates)
@@ -116,22 +149,32 @@ router.get('/', (req, res) => {
     }
 });
 
-// GET locations within bounds (for map)
-router.get('/bounds', (req, res) => {
+// GET locations within radius (for map)
+router.get('/radius', (req, res) => {
     try {
-        const { minLat, maxLat, minLng, maxLng } = req.query;
-        if (!minLat || !maxLat || !minLng || !maxLng) {
-            return res.status(400).json({ error: 'minLat, maxLat, minLng, maxLng query parameters are required' });
+        const { latitude, longitude, radius } = req.query;
+        if (!latitude || !longitude || !radius) {
+            return res.status(400).json({ error: 'latitude, longitude, and radius query parameters are required' });
         }
-        const locations = getLocationsByBounds(
-            parseFloat(minLat as string),
-            parseFloat(maxLat as string),
-            parseFloat(minLng as string),
-            parseFloat(maxLng as string)
-        );
+
+        const lat = parseFloat(latitude as string);
+        const lon = parseFloat(longitude as string);
+        const rad = parseFloat(radius as string);
+
+        if (isNaN(lat) || isNaN(lon) || isNaN(rad)) {
+            return res.status(400).json({message: 'Non numeric value passed as parameter'})
+        }
+
+        const flags = validateRadius(lat, lon, rad);
+        if (flags.length > 0) {
+            const messages = flags.join('\n');
+            res.status(400).send({message: messages})
+        }
+
+        const locations = getLocationsWithinRadius(lat, lon, rad);
         res.json(locations);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch locations by bounds' });
+        res.status(500).json({ error: 'Failed to fetch locations by radius' });
     }
 });
 
@@ -217,3 +260,4 @@ router.delete('/:id', (req, res) => {
 });
 
 export default router;
+export { getLocationsWithinRadius, calculateDistance }

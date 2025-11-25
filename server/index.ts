@@ -8,6 +8,7 @@ import speciesRoutes from './routes/species';
 import locationsRoutes from './routes/locations';
 import imagesRoutes from './routes/images';
 import weatherRoutes from './routes/weather';
+import recommendedRoutes from './routes/recommended';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -31,6 +32,7 @@ app.use('/api/species', speciesRoutes);
 app.use('/api/locations', locationsRoutes);
 app.use('/api/images', imagesRoutes);
 app.use('/api/weather', weatherRoutes);
+app.use('/api/recommended', recommendedRoutes);
 
 // Serve static files from SvelteKit build
 const buildPath = path.join(__dirname, '../build');
@@ -51,4 +53,5 @@ app.listen(PORT, () => {
 	console.log(`  - http://localhost:${PORT}/api/locations`);
 	console.log(`  - http://localhost:${PORT}/api/images`);
 	console.log(`  - http://localhost:${PORT}/api/weather`);
+	console.log(`  - http://localhost:${PORT}/api/recommended`);
 });

@@ -1,34 +1,20 @@
-import {Location, Result, ok, err, FishingConditions, TideInfo} from "../../shared/types";
+import {
+    Location,
+    Result,
+    ok,
+    err,
+    FishingConditions,
+    TideInfo,
+    LocationWeatherResult,
+    LocationWeatherError
+} from "../../shared/types";
 import {Router} from "express";
 import {db} from "../database/connection";
+import {calculateDistance, getLocationsWithinRadius} from "./locations";
+import {validateRadius} from "../utils";
 
 const WEATHER_API_KEY = process.env.WEATHERAPI_ACCESS_TOKEN || '';
 const BASE_URL = "http://api.weatherapi.com/v1"
-
-// Calculate distance between two points using Haversine formula
-// Returns distance in miles
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 3959;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-}
-
-// Get all locations within a radius (in miles) of a point
-function getLocationsWithinRadius(latitude: number, longitude: number, radiusMiles: number): Location[] {
-    const stmt = db.prepare('SELECT * FROM locations');
-    const allLocations = stmt.all() as Location[];
-
-    return allLocations.filter(location => {
-        const distance = calculateDistance(latitude, longitude, location.latitude, location.longitude);
-        return distance <= radiusMiles;
-    });
-}
 
 // raw API response
 interface RawWeatherResponse {
@@ -128,32 +114,17 @@ export const fetchLocationWeather = async (latitude: number, longitude: number):
     return ok(filtered);
 }
 
-// Response type for radius query
-interface LocationWeatherResult {
-    locationId: number;
-    locationName: string;
-    location: Location;
-    weather: FishingConditions;
-    distance: number;
-}
-
-interface LocationWeatherError {
-    locationId: number;
-    locationName: string;
-    error: string;
-    distance: number;
-}
 
 // Fetch weather for multiple locations within a radius
 async function fetchWeatherForRadius(
     latitude: number,
     longitude: number,
     radiusMiles: number
-): Promise<Result<{ successful: LocationWeatherResult[]; failed: LocationWeatherError[] }, Error>> {
+): Promise<{ successful: LocationWeatherResult[]; failed: LocationWeatherError[] }> {
     const locations = getLocationsWithinRadius(latitude, longitude, radiusMiles);
 
     if (locations.length === 0) {
-        return ok({ successful: [], failed: [] });
+        return { successful: [], failed: [] };
     }
 
     const successful: LocationWeatherResult[] = [];
@@ -190,7 +161,7 @@ async function fetchWeatherForRadius(
     successful.sort((a, b) => a.distance - b.distance);
     failed.sort((a, b) => a.distance - b.distance);
 
-    return ok({ successful, failed });
+    return { successful, failed };
 }
 
 const router = Router();
@@ -223,33 +194,25 @@ router.get('/radius', async (req, res) => {
         return res.status(400).send({error: 'Missing query parameter: latitude, longitude, or radius'});
     }
 
-    const latitude = parseFloat(req.query.latitude as string);
-    const longitude = parseFloat(req.query.longitude as string);
-    const radius = parseFloat(req.query.radius as string);
+    const lat = parseFloat(req.query.latitude as string);
+    const lon = parseFloat(req.query.longitude as string);
+    const rad = parseFloat(req.query.radius as string);
 
-    if (isNaN(latitude) || isNaN(longitude) || isNaN(radius)) {
+    if (isNaN(lat) || isNaN(lon) || isNaN(rad)) {
         return res.status(400).send({ error: 'Latitude, longitude, or radius could not be parsed' })
     }
 
-    if (radius <= 0 || radius > 500) {
-        return res.status(400).send({ error: 'Radius must be between 0 and 500 miles' })
+    const flags = validateRadius(lat, lon, rad);
+    if (flags.length > 0) {
+        const messages = flags.join('\n');
+        res.status(400).send({message: messages})
     }
 
-    const result = await fetchWeatherForRadius(latitude, longitude, radius);
-
-    if (!result.ok) {
-        console.error('Error fetching weather for radius:', result.error.message);
-        return res.status(500).send({
-            error: 'Error fetching weather conditions for locations in radius',
-            details: result.error.message
-        });
-    }
-
-    const { successful, failed } = result.value;
+    const { successful, failed } = await fetchWeatherForRadius(lat, lon, rad);
 
     res.status(200).send({
-        center: { latitude, longitude },
-        radius,
+        center: { latitude: lat, longitude: lon },
+        radius: rad,
         totalLocations: successful.length + failed.length,
         successfulCount: successful.length,
         failedCount: failed.length,
@@ -259,3 +222,4 @@ router.get('/radius', async (req, res) => {
 });
 
 export default router;
+export {fetchWeatherForRadius};
