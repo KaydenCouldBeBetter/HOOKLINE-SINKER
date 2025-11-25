@@ -31,7 +31,6 @@
   // Map layers UI state
   let showFlyout: boolean = false;
   let showModal: boolean = false;
-  let layersButtonRef: HTMLDivElement | null = null;
 
   // Event handlers
   const handleMapLayersClick = () => {
@@ -134,7 +133,7 @@
         on:click={handleMapLayersClick}
         title="Map Layers"
       >
-        ⚙️
+        🗂️
       </button>
     </div>
   </div>
@@ -200,9 +199,9 @@
   <!-- Desktop Layout: Floating Command Card (Top Left) -->
   <div class="fixed top-6 left-6 w-[380px] bg-midnight-glass backdrop-blur-xl border border-midnight-border rounded-2xl shadow-2xl z-50 pointer-events-auto">
     <!-- Header Row -->
-    <div class="flex justify-between items-center p-4 border-b border-white/10">
+    <div class="flex justify-between items-center p-4 border-b border-midnight-border">
       <!-- Hamburger Menu -->
-      <button class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors p-2 hover:bg-white/5 rounded-lg" title="Main Menu" on:click={() => {
+      <button class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors p-2 hover:bg-midnight-surfaceDark rounded-lg" title="Main Menu" on:click={() => {
         const menuEvent = new CustomEvent('toggleMenu');
         window.dispatchEvent(menuEvent);
       }}>
@@ -310,13 +309,13 @@
   <!-- Right Side Controls -->
   <div class="fixed right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
     <!-- Map Layers Button (Top) -->
-    <div bind:this={layersButtonRef} class="bg-midnight-glass backdrop-blur-xl border border-midnight-border rounded-full p-3 shadow-xl hover:bg-midnight-surfaceLight transition-all duration-200 flex items-center justify-center relative">
+    <div class="bg-midnight-glass backdrop-blur-xl border border-midnight-border rounded-full p-3 shadow-xl hover:bg-midnight-surfaceLight transition-all duration-200 flex items-center justify-center relative">
       <button 
         class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors text-lg flex items-center justify-center"
         on:click={handleMapLayersClick}
         title="Map Layers"
       >
-        ⚙️
+        🗂️
       </button>
       
       <!-- Desktop Flyout -->
@@ -324,7 +323,6 @@
         isOpen={showFlyout}
         currentStyle={currentMapStyle}
         onStyleSelect={handleStyleSelect}
-        buttonRef={layersButtonRef}
       />
     </div>
     
@@ -332,7 +330,7 @@
     <div class="bg-midnight-glass backdrop-blur-xl border border-midnight-border rounded-full p-2 shadow-xl hover:bg-midnight-surfaceLight transition-all duration-200">
       <div class="flex flex-col gap-1">
         <button 
-          class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors text-sm px-2 py-1 hover:bg-white/10 rounded flex items-center justify-center"
+          class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors text-sm px-2 py-1 hover:bg-midnight-surfaceLight rounded flex items-center justify-center"
           on:click={() => {
             const mapEvent = new CustomEvent('mapZoomIn');
             window.dispatchEvent(mapEvent);
@@ -343,7 +341,7 @@
         </button>
         <div class="h-px bg-midnight-border mx-1"></div>
         <button 
-          class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors text-sm px-2 py-1 hover:bg-white/10 rounded flex items-center justify-center"
+          class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors text-sm px-2 py-1 hover:bg-midnight-surfaceLight rounded flex items-center justify-center"
           on:click={() => {
             const mapEvent = new CustomEvent('mapZoomOut');
             window.dispatchEvent(mapEvent);

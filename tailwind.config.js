@@ -18,7 +18,7 @@ export default {
 				midnight: {
 					// The "Midnight Glass" Surface
 					glass: '#1e1e2e', // Catppuccin Base
-					glassOpacity: 'rgba(30, 30, 46, 0.9)', // Base + 90% Opacity
+					glassOpacity: 'rgba(30, 30, 46, 0.7)', // Base + 70% Opacity (updated for transparency)
 					
 					// Typography (High Contrast)
 					textPrimary: '#cdd6f4', // Text Base - Off White

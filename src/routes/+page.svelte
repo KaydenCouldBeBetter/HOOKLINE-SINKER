@@ -315,22 +315,22 @@
 				el.style.backgroundColor = '#6366f1'; // indigo
 			}
 
-			// Create popup content
+			// Create popup content with Midnight Standard dark glass theme
 			let popupContent = `
-				<div style="color: black; min-width: 200px;">
+				<div style="color: #cdd6f4; min-width: 200px; background: rgba(30, 30, 46, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 12px;">
 					<h3 style="font-weight: bold; margin: 0 0 8px 0; font-size: 14px;">${marker.title || 'Fishing Spot'}</h3>
 			`;
 
 			// Add score if available
 			if (marker.score !== undefined) {
 				popupContent += `
-					<div style="background: #f0f0f0; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
-						<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+					<div style="background: rgba(49, 50, 68, 0.8); padding: 8px; border-radius: 4px; margin-bottom: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
+						<div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: #a6adc8;">
 							<span>Fishing Score:</span>
-							<strong>${Math.round(marker.score)}/100</strong>
+							<strong style="color: #cdd6f4;">${Math.round(marker.score)}/100</strong>
 						</div>
-						<div style="background: #ddd; height: 6px; border-radius: 3px; overflow: hidden;">
-							<div style="width: ${marker.score}%; height: 100%; background: ${marker.score > 70 ? '#10b981' : marker.score > 40 ? '#f59e0b' : '#ef4444'};"></div>
+						<div style="background: rgba(255, 255, 255, 0.1); height: 6px; border-radius: 3px; overflow: hidden;">
+							<div style="width: ${marker.score}%; height: 100%; background: ${marker.score > 70 ? '#a6e3a1' : marker.score > 40 ? '#fab387' : '#f38ba8'};"></div>
 						</div>
 					</div>
 				`;
@@ -338,18 +338,18 @@
 				// Add breakdown if available
 				if (marker.breakdown) {
 					popupContent += `
-					<div style="margin-top: 8px; font-size: 12px;">
+					<div style="margin-top: 8px; font-size: 12px; color: #a6adc8;">
 						<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
 							<span>Weather:</span>
-							<span>${Math.round(marker.breakdown.weatherComfort)}/100</span>
+							<span style="color: #cdd6f4;">${Math.round(marker.breakdown.weatherComfort)}/100</span>
 						</div>
 						<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
 							<span>Fish Activity:</span>
-							<span>${Math.round(marker.breakdown.fishActivity)}/100</span>
+							<span style="color: #cdd6f4;">${Math.round(marker.breakdown.fishActivity)}/100</span>
 						</div>
-						<div style="display: flex; justify-content: space-between;">
+						<div style="display: flex; justify-between;">
 							<span>Water Conditions:</span>
-							<span>${Math.round(marker.breakdown.waterConditions)}/100</span>
+							<span style="color: #cdd6f4;">${Math.round(marker.breakdown.waterConditions)}/100</span>
 						</div>
 					</div>
 					`;
@@ -357,8 +357,8 @@
 			} else {
 				// Default popup for non-recommended markers
 				popupContent += `
-					${marker.description ? `<p style="font-size: 12px; margin: 0 0 4px 0;">${marker.description}</p>` : ''}
-					<p style="font-size: 11px; color: #666; margin: 0;">${marker.category ? `Category: ${marker.category}` : ''}</p>
+					${marker.description ? `<p style="font-size: 12px; margin: 0 0 4px 0; color: #a6adc8;">${marker.description}</p>` : ''}
+					<p style="font-size: 11px; color: #6c7086; margin: 0;">${marker.category ? `Category: ${marker.category}` : ''}</p>
 				`;
 			}
 
