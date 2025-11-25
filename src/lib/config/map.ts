@@ -61,7 +61,7 @@ export const MAP_STYLE_MIDNIGHT_WATER = MAP_STYLES['midnight-water'].url;
 export const MAP_CENTER: LngLatLike = [-73.9857, 40.7484];
 export const MAP_ZOOM = 11;
 
-export const MAP_OPTIONS: MapboxOptions = {
+export const MAP_OPTIONS = {
 	center: MAP_CENTER,
 	zoom: MAP_ZOOM,
 	// Disable default Mapbox controls to use custom UI
