@@ -44,9 +44,14 @@
   };
 
   const handleMapStyleChange = (style: MapStyle) => {
+    currentMapStyle = style;
     // Dispatch custom event for parent component to handle
     const mapStyleEvent = new CustomEvent('mapStyleChange', { detail: style });
     window.dispatchEvent(mapStyleEvent);
+  };
+
+  const handleMapStyleSelectorChange = (event: CustomEvent<MapStyle>) => {
+    handleMapStyleChange(event.detail);
   };
 
   const handleSpeciesLoaded = (species: string[]) => {
@@ -143,8 +148,8 @@
         <!-- Map Tab: Map Style Controls -->
         <MapStyleSelector 
           currentStyle={currentMapStyle}
-          onStyleSelect={handleMapStyleChange}
-          variant="mobile"
+          isMobile={true}
+          on:styleChange={handleMapStyleSelectorChange}
         />  
         <div class="text-center text-xs text-midnight-textMuted mt-4">
           Choose how you want to view the fishing map
@@ -343,8 +348,8 @@
               <!-- Map Styles -->
               <MapStyleSelector 
                 currentStyle={currentMapStyle}
-                onStyleSelect={handleMapStyleChange}
-                variant="desktop"
+                isMobile={false}
+                on:styleChange={handleMapStyleSelectorChange}
               />
             </div>
           </div>
