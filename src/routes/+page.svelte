@@ -467,6 +467,7 @@
 	<Layout
 		{selectedSpecies}
 		{selectedCategories}
+		{allMarkers}
 		onToggleSpecies={toggleSpecies}
 		onToggleCategory={toggleCategory}
 		temperature={currentWeather?.forecast?.[0]?.summary?.maxTemp || 24}

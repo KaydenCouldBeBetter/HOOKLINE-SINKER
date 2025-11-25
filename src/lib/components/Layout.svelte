@@ -4,9 +4,10 @@
   import WeatherWidget from './WeatherWidget.svelte';
   import SpeciesManager from './SpeciesManager.svelte';
   import TabNavigation from './TabNavigation.svelte';
-  import MapStyleSelector from './MapStyleSelector.svelte';
+  import MapStyleSelector from '$lib/components/MapStyleSelector.svelte';
   import type { MapStyle } from '$lib/config/map';
   import { MAP_STYLES } from '$lib/config/map';
+  import { generateCategoryOptions, type FilterCategory } from '$lib/config/filters';
 
   // Layout props only - no business logic
   export let selectedSpecies: string[] = [];
@@ -32,17 +33,19 @@
   export let isLoadingRecommendations: boolean = false;
   export let mapInstance: any = null;
   export let mapMarkers: any[] = [];
+  export let allMarkers: any[] = []; // For generating category options
 
   // Reactive calculations
   $: selectedCount = selectedSpecies.length + selectedCategories.length;
   $: filterText = selectedCount === 0 ? 'All Filters' : `${selectedCount} Selected`;
   
-  // Category options
-  const categoryOptions = [
-    { id: 'lake', name: '🏞️ Lakes', icon: '🏞️' },
-    { id: 'river', name: '🌊 Rivers', icon: '🌊' },
-    { id: 'parking', name: '🚗 Parking', icon: '🚗' }
-  ];
+  // Auto-generate category options when markers are available
+  $: if (allMarkers.length > 0) {
+    categoryOptions = generateCategoryOptions(allMarkers);
+  }
+  
+  // Category options - dynamically populated
+  let categoryOptions: FilterCategory[] = [];
   let activeTab: 'plan' | 'map' | 'spots' = 'plan';
   let speciesOptions: string[] = [];
   let loading: boolean = false;
