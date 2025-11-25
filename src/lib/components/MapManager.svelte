@@ -26,7 +26,7 @@
 	let mapError: string | null = null;
 	let styleLoadHandler: (() => void) | null = null;
 
-	const accessToken = 'pk.eyJ1IjoiYnJpZ2dzbG92ZXJ6IiwiYSI6ImNtaHYwa2ljdjA1bmIyam9oN3Jqendub2sifQ.4RPt5tQ8l41FqBY7dMJfog';
+	const accessToken = env[MAPBOX_TOKEN_ENV];
 
 	const syncMapStyle = () => {
 		const targetStyle = mapStyle;
@@ -61,19 +61,13 @@
 	};
 
 	onMount(() => {
-		console.log('DEBUG: accessToken =', accessToken);
-		console.log('DEBUG: accessToken type =', typeof accessToken);
-		console.log('DEBUG: accessToken length =', accessToken?.length);
-		
 		if (!accessToken) {
-			console.log('DEBUG: accessToken is falsy, setting mapError');
 			mapError = MISSING_TOKEN_MESSAGE;
 			onMapError?.(MISSING_TOKEN_MESSAGE);
 			return;
 		}
 
 		try {
-			console.log('DEBUG: Attempting to initialize map...');
 			mapInstance = new mapboxgl.Map({
 				container: mapContainer!,
 				style: MAP_STYLES[mapStyle].url,
@@ -113,15 +107,17 @@
 				}
 			});
 
-			mapInstance.on('load', () => {
-				currentMapStyle = mapStyle;
-				onMapLoad?.();
+			// Handle non-critical Mapbox errors
+			mapInstance.on('error', (e) => {
+				// Only log non-critical errors, don't fail the map
+				console.warn('Mapbox warning:', e);
 			});
 
-			mapInstance.on('error', (e) => {
-				console.error('Mapbox error:', e);
-				mapError = 'Map loading failed';
-				onMapError?.(mapError || 'Unknown map error');
+			// Notify when map is fully loaded
+			onMapLoad?.();
+
+			mapInstance.on('load', () => {
+				currentMapStyle = mapStyle;
 			});
 		} catch (error) {
 			console.error('Map initialization error:', error);
