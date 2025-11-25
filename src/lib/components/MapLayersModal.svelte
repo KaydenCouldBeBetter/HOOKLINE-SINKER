@@ -45,24 +45,22 @@
       <div class="grid grid-cols-1 gap-4">
         {#each Object.entries(MAP_STYLES) as [key, style]}
           <button
-            class="flex items-center p-4 rounded-xl border-2 transition-all duration-200 hover:bg-white/5 group"
+            class="flex items-center p-4 rounded-xl border-2 transition-all duration-200 hover:bg-white/5 group border-white/10"
             class:border-[#cba6f7]={currentStyle === key}
-            class:border-white/10={currentStyle !== key}
             on:click={() => selectStyle(key as MapStyle)}
           >
             <!-- Icon -->
-            <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl mr-4
-              {currentStyle === key ? 'bg-[#cba6f7]/20 text-[#cba6f7]' : 'bg-[#1e1e2e]/50 text-[#a6adc8]'}
-              group-hover:bg-[#cba6f7]/10 group-hover:text-[#cba6f7] transition-colors"
+            <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl mr-4 bg-[#1e1e2e]/50 text-[#a6adc8] group-hover:bg-[#cba6f7]/10 group-hover:text-[#cba6f7] transition-colors"
+              class:bg-[#cba6f7]/20={currentStyle === key}
+              class:text-[#cba6f7]={currentStyle === key}
             >
               {style.icon}
             </div>
             
             <!-- Content -->
             <div class="flex-1 text-left">
-              <h3 class="text-[#cdd6f4] font-semibold text-base mb-1
-                {currentStyle === key ? 'text-[#cba6f7]' : ''}
-                group-hover:text-[#cba6f7] transition-colors"
+              <h3 class="text-[#cdd6f4] font-semibold text-base mb-1 group-hover:text-[#cba6f7] transition-colors"
+                class:text-[#cba6f7]={currentStyle === key}
               >
                 {style.name}
               </h3>

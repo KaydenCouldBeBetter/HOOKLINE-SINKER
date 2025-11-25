@@ -34,21 +34,18 @@
     <div class="flex gap-2">
       {#each Object.entries(MAP_STYLES) as [key, style]}
         <button
-          class="flex flex-col items-center p-2 rounded-lg transition-all duration-200 hover:bg-white/5 group"
-          class:border-2={currentStyle === key}
+          class="flex flex-col items-center p-2 rounded-lg transition-all duration-200 hover:bg-white/5 group border-2 border-transparent"
           class:border-[#cba6f7]={currentStyle === key}
-          class:border-transparent={currentStyle !== key}
           on:click={() => selectStyle(key as MapStyle)}
         >
-          <div class="w-12 h-12 rounded-lg mb-1 flex items-center justify-center text-2xl
-            {currentStyle === key ? 'bg-[#cba6f7]/20 text-[#cba6f7]' : 'bg-[#1e1e2e]/50 text-[#a6adc8]'}
-            group-hover:bg-[#cba6f7]/10 group-hover:text-[#cba6f7] transition-colors"
+          <div class="w-12 h-12 rounded-lg mb-1 flex items-center justify-center text-2xl bg-[#1e1e2e]/50 text-[#a6adc8] group-hover:bg-[#cba6f7]/10 group-hover:text-[#cba6f7] transition-colors"
+            class:bg-[#cba6f7]/20={currentStyle === key}
+            class:text-[#cba6f7]={currentStyle === key}
           >
             {style.icon}
           </div>
-          <div class="text-xs font-medium transition-colors
-            {currentStyle === key ? 'text-[#cba6f7]' : 'text-[#a6adc8]'}
-            group-hover:text-[#cba6f7]"
+          <div class="text-xs font-medium transition-colors text-[#a6adc8] group-hover:text-[#cba6f7]"
+            class:text-[#cba6f7]={currentStyle === key}
           >
             {style.name}
           </div>
