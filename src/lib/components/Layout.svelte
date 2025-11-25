@@ -184,83 +184,71 @@
     <FloatingActionButton icon="🎣" onClick={onLogCatch} />
   </div>
 {:else}
-  <!-- Desktop Layout -->
-  <!-- Top Left: Command Card -->
-  <div class="absolute left-6 top-6 pointer-events-auto z-20">
-    <UniversalPanel padding="md" className="w-96">
-      <div class="space-y-4">
-        <!-- Current Conditions -->
+  <!-- Mobile: Bottom Sheet -->
+  <div class="absolute bottom-4 left-4 right-4 pointer-events-auto z-20">
+    <UniversalPanel padding="md" className="max-h-80 overflow-y-auto">
+      <!-- Weather Header -->
+      <div class="flex justify-between items-center mb-4">
         <div>
-          <h3 class="text-[#cdd6f4] font-medium mb-2">Current Conditions</h3>
-          {#if isLoadingWeather}
-            <div class="text-[#a6adc8] text-sm py-1">Loading weather...</div>
-          {:else if weatherError}
-            <div class="text-[#f38ba8] text-sm py-1">
-              ⚠️ Weather unavailable
-            </div>
-          {:else}
-            <div class="flex items-center gap-2">
-              <WeatherWidget 
-                temperature={temperature} 
-                condition={weatherCondition} 
-                moonPhase={moonPhase}
+          <h2 class="text-[#cdd6f4] font-medium">Weather</h2>
+          {#if isUsingCachedWeather}
+            <div class="text-[#89b4fa] text-xs">Cached data</div>
+          {/if}
+        </div>
+        <div class="flex items-center gap-2">
+          <WeatherWidget 
+            temperature={temperature} 
+            condition={weatherCondition} 
+            moonPhase={moonPhase}
+          />
+          {#if isUsingCachedWeather}
+            <button 
+              class="text-[#89b4fa] text-xs hover:text-[#b4befe]" 
+              on:click={onRefreshWeather}
+              title="Refresh weather data"
+            >
+              🔄
+            </button>
+          {/if}
+        </div>
+      </div>
+      
+      <!-- Quick Filters -->
+      <div>
+        <h3 class="text-[#cdd6f4] font-medium mb-3">Quick Filters</h3>
+        {#if loading}
+          <div class="text-[#a6adc8] text-sm">
+            Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
+          </div>
+        {:else if error}
+          <div class="text-[#f38ba8] text-sm">
+            ⚠️ Error: {error}
+            <button 
+              class="ml-2 text-xs underline hover:text-[#f2cdcd]" 
+              on:click={() => loadSpecies()}
+            >
+              Retry
+            </button>
+          </div>
+        {:else}
+          <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+            {#each speciesOptions as species (species)}
+              <FilterChip 
+                label={species}
+                active={selectedSpecies.includes(species as string)}
+                onClick={() => onToggleSpecies(species as string)}
               />
-              {#if isUsingCachedWeather}
-                <button 
-                  class="text-[#89b4fa] text-xs hover:text-[#b4befe]" 
-                  on:click={onRefreshWeather}
-                  title="Refresh weather data"
-                >
-                  🔄
-                </button>
-              {/if}
-            </div>
-          {/if}
-        </div>
-        
-        <!-- Quick Filters -->
-        <div>
-          <h3 class="text-[#cdd6f4] font-medium mb-2">Quick Filters</h3>
-          {#if loading}
-            <div class="text-[#a6adc8] text-sm">
-              Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
-            </div>
-          {:else if error}
-            <div class="text-[#f38ba8] text-sm">
-              ⚠️ Error: {error}
-              <button 
-                class="ml-2 text-xs underline hover:text-[#f2cdcd]" 
-                on:click={() => loadSpecies()}
-              >
-                Retry
-              </button>
-            </div>
-          {:else}
-            <div class="flex flex-wrap gap-2">
-              {#each speciesOptions as species (species)}
-                <FilterChip 
-                  label={species}
-                  active={selectedSpecies.includes(species as string)}
-                  onClick={() => onToggleSpecies(species as string)}
-                />
-              {/each}
-            </div>
-          {/if}
-        </div>
+            {/each}
+          </div>
+        {/if}
       </div>
     </UniversalPanel>
   </div>
 
   <!-- Right Edge: Control Stack -->
-  <div class="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
-    <ControlButton icon="�" size="sm" onClick={onGPSLocation} />
+  <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
+    <ControlButton icon="📍" size="sm" onClick={onGPSLocation} />
     <ControlButton icon="🧭" size="sm" onClick={onResetBearing} />
-    <ControlButton icon="🗺️" size="sm" onClick={onResetBearing} />
-    <FloatingActionButton icon="🎣" onClick={onLogCatch} />
-  </div>
-
-  <!-- Bottom Right: FAB -->
-  <div class="absolute right-6 bottom-6 pointer-events-auto z-20">
     <FloatingActionButton icon="🎣" onClick={onLogCatch} />
   </div>
 {/if}
