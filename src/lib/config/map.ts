@@ -66,8 +66,6 @@ export const MAP_OPTIONS: MapboxOptions = {
 	zoom: MAP_ZOOM,
 	// Disable default Mapbox controls to use custom UI
 	attributionControl: false,
-	navigationControl: false,
-	scaleControl: false,
 	// Custom interaction settings
 	dragPan: true,
 	dragRotate: true,
