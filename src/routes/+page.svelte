@@ -1,59 +1,200 @@
 <script lang="ts">
+	import MapManager from '$lib/components/MapManager.svelte';
+	import Layout from '$lib/components/Layout.svelte';
+	import MapStyleSelector from '$lib/components/MapStyleSelector.svelte';
+	import type { MapStyle } from '$lib/config/map';
+	import { cache, CACHE_KEYS, CACHE_TTL } from '$lib/utils/cache';
 	import { onMount } from 'svelte';
-	import mapboxgl from 'mapbox-gl';
-	import 'mapbox-gl/dist/mapbox-gl.css';
-	import { env } from '$env/dynamic/public';
 
+	// Map state
 	let mapContainer: HTMLDivElement | null = null;
-	const accessToken = env.PUBLIC_MAPBOX_ACCESS_TOKEN;
+	let mapStyle: MapStyle = 'structure';
+	let mapInstance: any = null;
 
-	onMount(() => {
-		if (!accessToken) {
-			console.warn('PUBLIC_MAPBOX_ACCESS_TOKEN is not set. Mapbox map will not initialize.');
+	// App state
+	let selectedSpecies: string[] = [];
+	let currentWeather: any = null;
+	let weatherError: string | null = null;
+	let isLoadingWeather: boolean = false;
+	let isUsingCachedWeather: boolean = false;
+
+	// UI state
+	let isMobile: boolean = false;
+
+	// Responsive breakpoint detection
+	$: {
+		const checkMobile = () => {
+			if (typeof window !== 'undefined') {
+				isMobile = window.innerWidth < 768;
+			}
+		};
+		checkMobile();
+		if (typeof window !== 'undefined') {
+			window.addEventListener('resize', checkMobile);
+		}
+	}
+
+	// Event handlers
+	const toggleSpecies = (species: string) => {
+		selectedSpecies = selectedSpecies.includes(species)
+			? selectedSpecies.filter((item) => item !== species)
+			: [...selectedSpecies, species];
+	};
+
+	const handleMapReady = (map: any) => {
+		mapInstance = map;
+		loadData();
+	};
+
+	const handleMapError = (error: string) => {
+		console.error('Map error:', error);
+	};
+
+	const handleMapLoad = () => {
+		console.log('Map loaded successfully');
+	};
+
+	const loadData = async () => {
+		// Load weather data with caching
+		isLoadingWeather = true;
+		weatherError = null;
+		isUsingCachedWeather = false;
+
+		// Try to get from cache first
+		const cachedWeather = cache.get(CACHE_KEYS.WEATHER);
+		if (cachedWeather) {
+			currentWeather = cachedWeather;
+			isUsingCachedWeather = true;
+			isLoadingWeather = false;
 			return;
 		}
 
-		mapboxgl.accessToken = accessToken;
-		const map = new mapboxgl.Map({
-			container: mapContainer!,
-			style: 'mapbox://styles/mapbox/streets-v12',
-			center: [-73.9857, 40.7484],
-			zoom: 11
-		});
+		try {
+			const response = await fetch('/api/weather/location?latitude=40.7128&longitude=-74.0060');
+			if (!response.ok) {
+				throw new Error(`Weather API returned ${response.status}: ${response.statusText}`);
+			}
+			const data = await response.json();
+			if (!data || !data.forecast) {
+				throw new Error('Invalid weather data format');
+			}
+			currentWeather = data;
+			// Cache the weather data
+			cache.set(CACHE_KEYS.WEATHER, data, CACHE_TTL.WEATHER);
+		} catch (error) {
+			console.error('Failed to load weather:', error);
+			weatherError = error instanceof Error ? error.message : 'Failed to load weather data';
+			// Set fallback weather data
+			currentWeather = {
+				forecast: [{
+					summary: {
+						maxTemp: 24,
+						condition: 'Partly Cloudy',
+						moonPhase: '🌗'
+					}
+				}]
+			};
+		} finally {
+			isLoadingWeather = false;
+		}
+	};
 
-		map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+	const handleResetBearing = () => {
+		mapInstance?.setBearing(0);
+	};
+
+	onMount(() => {
+		// Listen for custom events
+		const handleZoomIn = () => {
+			mapInstance?.zoomIn();
+		};
+
+		const handleZoomOut = () => {
+			mapInstance?.zoomOut();
+		};
+
+		const handleToggleMenu = () => {
+			console.log('Menu toggled - placeholder for main menu functionality');
+		};
+
+		const handleToggleProfile = () => {
+			console.log('Profile toggled - placeholder for user profile functionality');
+		};
+
+		window.addEventListener('mapZoomIn', handleZoomIn);
+		window.addEventListener('mapZoomOut', handleZoomOut);
+		window.addEventListener('toggleMenu', handleToggleMenu);
+		window.addEventListener('toggleProfile', handleToggleProfile);
 
 		return () => {
-			map.remove();
+			window.removeEventListener('mapZoomIn', handleZoomIn);
+			window.removeEventListener('mapZoomOut', handleZoomOut);
+			window.removeEventListener('toggleMenu', handleToggleMenu);
+			window.removeEventListener('toggleProfile', handleToggleProfile);
 		};
 	});
+
+	const handleGPSLocation = () => {
+		if (typeof window !== 'undefined' && navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				(position) => {
+					mapInstance?.flyTo({
+						center: [position.coords.longitude, position.coords.latitude],
+						zoom: 12
+					});
+				},
+				(error) => {
+					console.error('GPS error:', error);
+				}
+			);
+		}
+	};
+
+	const handleMapStyleChange = (event: CustomEvent<MapStyle>) => {
+		const newStyle = event.detail;
+		if (!newStyle || mapStyle === newStyle) return;
+		mapStyle = newStyle;
+	};
+
+	const handleLogCatch = () => {
+		if (typeof window !== 'undefined') {
+			alert('Log Catch functionality - placeholder implementation');
+		}
+	};
+
+	// Cache management functions
+	const refreshWeather = () => {
+		cache.invalidate(CACHE_KEYS.WEATHER);
+		loadData();
+	};
+
+	const refreshSpecies = () => {
+		cache.invalidate(CACHE_KEYS.SPECIES);
+		// Trigger species reload through Layout component
+	};
 </script>
 
 <svelte:head>
-	<title>Map View</title>
+	<title>HOOK, LINE, & SINKER</title>
 </svelte:head>
 
-<div bind:this={mapContainer} class="map-container" aria-label="Interactive city map"></div>
+<div class="relative h-screen w-screen overflow-hidden bg-black">
+	<!-- Map -->
+	<MapManager bind:mapStyle={mapStyle} bind:mapContainer={mapContainer} onMapReady={handleMapReady} onMapError={handleMapError} onMapLoad={handleMapLoad} />
 
-<style>
-	:global(html, body) {
-		margin: 0;
-		height: 100%;
-	}
-
-	:global(body) {
-		font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-	}
-
-	:global(#svelte) {
-		height: 100%;
-	}
-
-	.map-container {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-	}
-</style>
+	<!-- Responsive UI Layer -->
+	<Layout
+		{selectedSpecies}
+		onToggleSpecies={toggleSpecies}
+		temperature={currentWeather?.forecast?.[0]?.summary?.maxTemp || 24}
+		weatherCondition={currentWeather?.forecast?.[0]?.summary?.condition?.toLowerCase()?.includes('rain') ? 'rainy' : 
+											currentWeather?.forecast?.[0]?.summary?.condition?.toLowerCase()?.includes('cloud') ? 'cloudy' : 'sunny'}
+		moonPhase={currentWeather?.forecast?.[0]?.moonPhase || '🌗'}
+		isUsingCachedWeather={isUsingCachedWeather}
+		onRefreshWeather={refreshWeather}
+		onLogCatch={handleLogCatch}
+		{isMobile}
+		currentMapStyle={mapStyle}
+		onMapStyleChange={(style: MapStyle) => mapStyle = style}
+	/>
+</div>
