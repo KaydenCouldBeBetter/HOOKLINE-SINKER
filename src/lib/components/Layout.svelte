@@ -38,7 +38,7 @@
 
   const handleMapLayersClick = () => {
     if (isMobile) {
-      showModal = true;
+      showModal = !showModal;
     } else {
       showFlyout = !showFlyout;
     }
@@ -48,12 +48,33 @@
     onMapStyleChange(style);
   };
 
+  const handleModalClose = () => {
+    showModal = false;
+  };
+
+  const refreshSpecies = () => {
+    cache.invalidate(CACHE_KEYS.SPECIES);
+    retryCount = 0;
+    loadSpecies();
+  };
+
   // Load species data
   const loadSpecies = async () => {
     loading = true;
     error = null;
 
     try {
+      // Check cache first
+      const cachedData = cache.get<string[]>(CACHE_KEYS.SPECIES);
+      if (cachedData) {
+        console.log('Using cached species data:', cachedData);
+        speciesOptions = cachedData;
+        isUsingCachedSpecies = true;
+        loading = false;
+        return;
+      }
+
+      // Fetch from API if not cached
       const response = await fetch('/api/species');
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -62,12 +83,18 @@
       console.log('Raw species data:', data);
       
       if (data && Array.isArray(data) && data.length > 0) {
-        speciesOptions = data
-          .filter((item: any) => item && typeof item === 'object' && 'name' in item)
-          .map((item: any) => item.name)
+        const processedSpecies = data
+          .filter((item: any) => item && typeof item === 'object' && 'species_name' in item)
+          .map((item: any) => item.species_name)
           .filter((name: string) => name && typeof name === 'string')
           .sort((a: string, b: string) => a.localeCompare(b));
-        console.log('Processed species options:', speciesOptions);
+        
+        console.log('Processed species options:', processedSpecies);
+        speciesOptions = processedSpecies;
+        isUsingCachedSpecies = false;
+        
+        // Cache the processed data for 24 hours
+        cache.set(CACHE_KEYS.SPECIES, processedSpecies, CACHE_TTL.SPECIES);
       } else {
         throw new Error('Invalid species data format');
       }
@@ -145,6 +172,13 @@
           {:else if error}
             <div class="text-[#f38ba8] text-sm h-11 flex items-center">
               ⚠️ Error loading
+              <button 
+                class="ml-2 text-xs underline hover:text-[#f2cdcd]" 
+                on:click={refreshSpecies}
+                title="Refresh species data"
+              >
+                Retry
+              </button>
             </div>
           {:else}
             {#each speciesOptions as species (species)}
@@ -195,7 +229,7 @@
     </div>
     
     <!-- Content Area -->
-    <div class="p-5">
+    <div class="p-5 overflow-hidden">
       <!-- Current Conditions Section -->
       <div class="mb-5">
         <h3 class="text-[#cdd6f4] font-semibold text-sm tracking-wide mb-3">Current Conditions</h3>
@@ -228,23 +262,41 @@
           
           <!-- Quick Filters -->
           <div>
-            <h4 class="text-[#cdd6f4] font-medium text-sm mb-3">Quick Filters</h4>
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="text-[#cdd6f4] font-medium text-sm tracking-wide">Quick Filters</h4>
+              {#if isUsingCachedSpecies}
+                <button 
+                  class="text-[#89b4fa] text-xs hover:text-[#b4befe] transition-colors opacity-70 hover:opacity-100 flex items-center gap-1"
+                  on:click={refreshSpecies}
+                  title="Refresh species data"
+                >
+                  <span class="text-[10px]">Cached</span>
+                  🔄
+                </button>
+              {/if}
+            </div>
             {#if loading}
-              <div class="text-[#a6adc8] text-sm">
-                Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
+              <div class="text-[#a6adc8] text-sm py-2">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-[#cba6f7] rounded-full animate-pulse"></div>
+                  Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
+                </div>
               </div>
             {:else if error}
-              <div class="text-[#f38ba8] text-sm">
-                ⚠️ Error: {error}
-                <button 
-                  class="ml-2 text-xs underline hover:text-[#f2cdcd]" 
-                  on:click={() => loadSpecies()}
-                >
-                  Retry
-                </button>
+              <div class="text-[#f38ba8] text-sm py-2">
+                <div class="flex items-center gap-2">
+                  ⚠️ 
+                  <span>Error: {error}</span>
+                  <button 
+                    class="ml-2 text-xs underline hover:text-[#f2cdcd] transition-colors" 
+                    on:click={refreshSpecies}
+                  >
+                    Retry
+                  </button>
+                </div>
               </div>
             {:else}
-              <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto scrollbar-hide">
+              <div class="flex flex-wrap gap-2 max-h-40 overflow-y-auto scrollbar-hide pr-1 w-full">
                 {#each speciesOptions as species (species)}
                   <FilterChip 
                     label={species}
@@ -330,6 +382,7 @@
     isOpen={showModal}
     currentStyle={currentMapStyle}
     onStyleSelect={handleStyleSelect}
+    onClose={handleModalClose}
   />
 {/if}
 
