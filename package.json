@@ -4,15 +4,13 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "bun run vite dev",
-		"build": "bun run vite build",
-		"preview": "bun run vite preview",
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
 		"server": "bun run server/index.js",
-		"prepare": "bun run svelte-kit sync || echo ''",
-		"check": "bun run svelte-kit sync && bun run svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "bun run svelte-kit sync && bun run svelte-check --tsconfig ./tsconfig.json --watch",
-		"install": "bun install",
-		"run": "bun run"
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.0",
@@ -27,14 +25,14 @@
 		"svelte": "^5.41.0",
 		"svelte-check": "^4.3.3",
 		"typescript": "^5.9.3",
-		"vite": "^7.1.10",
-		"tailwindcss": "^3.4.18"
+		"vite": "^7.1.10"
 	},
 	"dependencies": {
-		"@catppuccin/palette": "^1.7.1",
+		"axios": "^1.13.2",
 		"cors": "^2.8.5",
 		"dotenv": "^17.2.3",
 		"express": "^5.1.0",
-		"mapbox-gl": "^3.16.0"
+		"mapbox-gl": "^3.16.0",
+		"tailwindcss": "3"
 	}
 }

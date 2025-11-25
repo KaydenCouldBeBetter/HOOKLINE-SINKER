@@ -1,8 +1,8 @@
-import { db } from '../database/connection';
-import { initializeDatabase } from '../database/connection';
-import { initSchema } from '../database/schema';
-import type { Species } from '../../shared/types';
-import speciesData from '../database/ny-species-data.json';
+import { db } from '../server/database/connection';
+import { initializeDatabase } from '../server/database/connection';
+import { initSchema } from '../server/database/schema';
+import type { Species } from '../shared/types';
+import speciesData from '../server/database/ny-species-data.json';
 
 function createSpecies(species: Species): number {
     const stmt = db.prepare(`
