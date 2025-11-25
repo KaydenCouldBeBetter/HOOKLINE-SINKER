@@ -164,76 +164,98 @@
   </div>
 {:else}
   <!-- Desktop Layout: Floating Command Card (Top Left) -->
-  <div class="fixed top-6 left-6 w-[24rem] bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/5 rounded-2xl p-5 shadow-2xl z-50 pointer-events-auto">
-    <!-- Weather Header -->
-    <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
+  <div class="fixed top-6 left-6 w-[24rem] bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/5 rounded-2xl shadow-2xl z-50 pointer-events-auto">
+    <!-- Header Row -->
+    <div class="flex justify-between items-center p-4 border-b border-white/10">
+      <!-- Hamburger Menu -->
+      <button class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors p-2 hover:bg-white/5 rounded-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+      
+      <!-- User Avatar -->
+      <div class="w-8 h-8 bg-[#89b4fa] rounded-full flex items-center justify-center text-[#1e1e2e] font-semibold text-sm hover:bg-[#b4f8f8] transition-colors cursor-pointer">
+        U
+      </div>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="p-5">
+      <!-- Weather Header -->
+      <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
+        <div>
+          <h2 class="text-[#cdd6f4] font-semibold text-sm tracking-wide">Weather</h2>
+          {#if isUsingCachedWeather}
+            <div class="text-[#89b4fa] text-xs mt-1">Cached data</div>
+          {/if}
+        </div>
+        <div class="flex items-center gap-3">
+          <WeatherWidget 
+            temperature={temperature} 
+            condition={weatherCondition} 
+            moonPhase={moonPhase}
+          />
+          {#if isUsingCachedWeather}
+            <button 
+              class="text-[#89b4fa] text-xs hover:text-[#b4befe] transition-colors opacity-70 hover:opacity-100"
+              on:click={onRefreshWeather}
+              title="Refresh weather data"
+            >
+              🔄
+            </button>
+          {/if}
+        </div>
+      </div>
+      
+      <!-- Quick Filters -->
       <div>
-        <h2 class="text-[#cdd6f4] font-semibold text-sm tracking-wide">Weather</h2>
-        {#if isUsingCachedWeather}
-          <div class="text-[#89b4fa] text-xs mt-1">Cached data</div>
+        <h3 class="text-[#cdd6f4] font-semibold text-sm tracking-wide mb-3">Quick Filters</h3>
+        {#if loading}
+          <div class="text-[#a6adc8] text-sm">
+            Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
+          </div>
+        {:else if error}
+          <div class="text-[#f38ba8] text-sm">
+            ⚠️ Error: {error}
+            <button 
+              class="ml-2 text-xs underline hover:text-[#f2cdcd]" 
+              on:click={() => loadSpecies()}
+            >
+              Retry
+            </button>
+          </div>
+        {:else}
+          <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto scrollbar-hide">
+            {#each speciesOptions as species (species)}
+              <FilterChip 
+                label={species}
+                active={selectedSpecies.includes(species as string)}
+                onClick={() => onToggleSpecies(species as string)}
+              />
+            {/each}
+          </div>
         {/if}
       </div>
-      <div class="flex items-center gap-3">
-        <WeatherWidget 
-          temperature={temperature} 
-          condition={weatherCondition} 
-          moonPhase={moonPhase}
-        />
-        {#if isUsingCachedWeather}
-          <button 
-            class="text-[#89b4fa] text-xs hover:text-[#b4befe] transition-colors opacity-70 hover:opacity-100"
-            on:click={onRefreshWeather}
-            title="Refresh weather data"
-          >
-            🔄
-          </button>
-        {/if}
-      </div>
-    </div>
-    
-    <!-- Map Theme -->
-    <div class="mb-4 pb-3 border-b border-white/10">
-      <h3 class="text-[#cdd6f4] font-semibold text-sm tracking-wide mb-3">Map Theme</h3>
-      {#if !isMobile}
-        <slot name="themeSelector">
-          <!-- Theme selector will be injected here -->
-        </slot>
-      {/if}
-    </div>
-    
-    <!-- Quick Filters -->
-    <div>
-      <h3 class="text-[#cdd6f4] font-semibold text-sm tracking-wide mb-3">Quick Filters</h3>
-      {#if loading}
-        <div class="text-[#a6adc8] text-sm">
-          Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
-        </div>
-      {:else if error}
-        <div class="text-[#f38ba8] text-sm">
-          ⚠️ Error: {error}
-          <button 
-            class="ml-2 text-xs underline hover:text-[#f2cdcd]" 
-            on:click={() => loadSpecies()}
-          >
-            Retry
-          </button>
-        </div>
-      {:else}
-        <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto scrollbar-hide">
-          {#each speciesOptions as species (species)}
-            <FilterChip 
-              label={species}
-              active={selectedSpecies.includes(species as string)}
-              onClick={() => onToggleSpecies(species as string)}
-            />
-          {/each}
-        </div>
-      {/if}
     </div>
   </div>
 
   <!-- Right Side Controls -->
   <div class="fixed right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
+    <!-- Map Layers Button -->
+    <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
+      <button 
+        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-lg flex items-center justify-center"
+        on:click={() => {
+          const mapEvent = new CustomEvent('toggleMapLayers');
+          window.dispatchEvent(mapEvent);
+        }}
+        title="Map Layers"
+      >
+        🗂️
+      </button>
+    </div>
+    
     <!-- Zoom Controls (Glass Style) -->
     <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
       <div class="flex flex-col gap-1">

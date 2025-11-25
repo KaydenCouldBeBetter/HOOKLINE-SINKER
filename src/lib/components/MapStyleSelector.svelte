@@ -79,7 +79,7 @@
       </UniversalPanel>
     </div>
   {:else}
-    <!-- Desktop: Compact version for command card -->
+    <!-- Desktop: Compact version for floating panel -->
     <div class="w-full">
       <button 
         class="flex items-center gap-2 w-full text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors bg-white/5 rounded-lg px-3 py-2 text-sm"
@@ -91,7 +91,7 @@
       </button>
       
       {#if isOpen}
-        <div class="mt-2 space-y-1 max-h-40 overflow-y-auto scrollbar-hide">
+        <div class="mt-2 space-y-1 max-h-48 overflow-y-auto scrollbar-hide">
           {#each styleKeys as style (style)}
             {@const currentStyleKey = style as MapStyle}
             <button

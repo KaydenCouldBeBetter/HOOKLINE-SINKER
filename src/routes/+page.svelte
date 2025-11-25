@@ -5,9 +5,10 @@
 	import type { MapStyle } from '$lib/config/map';
 	import { cache, CACHE_KEYS, CACHE_TTL } from '$lib/utils/cache';
 
-	// Map state
+	<!-- Map state -->
 	let mapContainer: HTMLDivElement | null = null;
 	let mapStyle: MapStyle = 'midnight-water';
+	let showLayersPanel = false;
 	let mapInstance: any = null;
 
 	// App state
@@ -95,8 +96,7 @@
 	};
 
 	const handleToggleLayers = () => {
-		// This function is now handled by MapStyleSelector
-		console.log('Map style selection is now handled by MapStyleSelector component');
+		showLayersPanel = !showLayersPanel;
 	};
 
 	const handleZoomIn = () => {
@@ -106,6 +106,31 @@
 	const handleZoomOut = () => {
 		mapInstance?.zoomOut();
 	};
+
+	onMount(() => {
+		// Listen for custom events
+		const handleToggleLayers = () => {
+			showLayersPanel = !showLayersPanel;
+		};
+
+		const handleZoomIn = () => {
+			mapInstance?.zoomIn();
+		};
+
+		const handleZoomOut = () => {
+			mapInstance?.zoomOut();
+		};
+
+		window.addEventListener('toggleMapLayers', handleToggleLayers);
+		window.addEventListener('mapZoomIn', handleZoomIn);
+		window.addEventListener('mapZoomOut', handleZoomOut);
+
+		return () => {
+			window.removeEventListener('toggleMapLayers', handleToggleLayers);
+			window.removeEventListener('mapZoomIn', handleZoomIn);
+			window.removeEventListener('mapZoomOut', handleZoomOut);
+		};
+	});
 
 	const handleGPSLocation = () => {
 		if (typeof window !== 'undefined' && navigator.geolocation) {
@@ -171,13 +196,25 @@
 		onGPSLocation={handleGPSLocation}
 		onLogCatch={handleLogCatch}
 		{isMobile}
-	>
-		<svelte:fragment slot="themeSelector">
-			<MapStyleSelector 
-				bind:currentStyle={mapStyle} 
-				on:styleChange={handleMapStyleChange}
-				{isMobile}
-			/>
-		</svelte:fragment>
-	</Layout>
+	/>
 </div>
+
+<!-- Floating Map Layers Panel (Hidden by default) -->
+{#if showLayersPanel}
+<div class="fixed top-1/2 right-24 -translate-y-1/2 bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/5 rounded-2xl p-4 shadow-2xl z-50 pointer-events-auto w-64">
+	<div class="flex justify-between items-center mb-3">
+		<h3 class="text-[#cdd6f4] font-semibold text-sm tracking-wide">Map Layers</h3>
+		<button 
+			class="text-[#a6adc8] hover:text-[#cdd6f4] transition-colors"
+			on:click={() => showLayersPanel = false}
+		>
+			✕
+		</button>
+	</div>
+	<MapStyleSelector 
+		bind:currentStyle={mapStyle} 
+		on:styleChange={handleMapStyleChange}
+		{isMobile}
+	/>
+</div>
+{/if}

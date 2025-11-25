@@ -90,11 +90,13 @@
 			mapInstance.on('style.load', () => {
 				if (!mapInstance) return;
 				
-				// Hide road layers for chartplotter effect
+				// Hide road layers for chartplotter effect - set opacity to 0.05
 				const layers = mapInstance.getStyle().layers;
 				layers?.forEach(layer => {
-					if (layer.id.includes('road') || layer.id.includes('highway') || layer.id.includes('street')) {
-						mapInstance?.setLayoutProperty(layer.id, 'visibility', 'none');
+					if (layer.id.includes('road') || layer.id.includes('highway') || layer.id.includes('street') || layer.id.includes('motorway') || layer.id.includes('trunk') || layer.id.includes('primary') || layer.id.includes('secondary') || layer.id.includes('tertiary')) {
+						// Set opacity to almost invisible (0.05) instead of hiding completely
+						mapInstance?.setPaintProperty(layer.id, 'line-opacity', 0.05);
+						mapInstance?.setPaintProperty(layer.id, 'line-color', '#ffffff');
 					}
 				});
 
