@@ -81,6 +81,13 @@
 			markers = showRecommendedOnly ? [...recommendedMarkers] : [...filteredMarkers, ...recommendedMarkers];
 		}
 		
+		// Filter out markers with invalid coordinates
+		markers = markers.filter((marker: any) => {
+			const lat = typeof marker.lat === 'number' ? marker.lat : parseFloat(marker.lat);
+			const lng = typeof marker.lng === 'number' ? marker.lng : parseFloat(marker.lng);
+			return !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+		});
+		
 		renderMarkers();
 	};
 
@@ -216,31 +223,64 @@
 		// Trigger species reload through Layout component
 	};
 
-	// Get user's current location
+	// Get user's location for recommendations
 	const getUserLocation = () => {
-		if (navigator.geolocation) {
+		if (typeof window !== 'undefined' && navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition(
 				(position) => {
-					userLocation = {
-						lat: position.coords.latitude,
-						lng: position.coords.longitude
-					};
-					// Center map on user's location
-					if (mapInstance) {
-						mapInstance.flyTo({
-							center: [userLocation.lng, userLocation.lat],
-							zoom: 10
-						});
+					// Validate coordinates before setting
+					const lat = position.coords.latitude;
+					const lng = position.coords.longitude;
+					
+					if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+						console.error('Invalid coordinates from geolocation:', { lat, lng });
+						recommendationError = 'Invalid location data received. Using default location.';
+						userLocation = { lat: 40.7128, lng: -74.0060 };
+					} else {
+						userLocation = { lat, lng };
+						console.log('User location obtained:', userLocation);
+						
+						// Fly to user location
+						if (mapInstance) {
+							mapInstance.flyTo({
+								center: [lng, lat],
+								zoom: 10
+							});
+						}
 					}
+					
 					// Load recommendations for user's location
 					loadRecommendedSpots();
 				},
 				(error) => {
 					console.error('Error getting location:', error);
-					recommendationError = 'Could not get your location. Using default location.';
+					let errorMessage = 'Could not get your location. Using default location.';
+					
+					// Provide more specific error messages
+					switch (error.code) {
+						case error.PERMISSION_DENIED:
+							errorMessage = 'Location access denied. Please enable location permissions. Using default location.';
+							break;
+						case error.POSITION_UNAVAILABLE:
+							errorMessage = 'Location information unavailable. Using default location.';
+							break;
+						case error.TIMEOUT:
+							errorMessage = 'Location request timed out. Using default location.';
+							break;
+						default:
+							errorMessage = 'Unknown location error. Using default location.';
+							break;
+					}
+					
+					recommendationError = errorMessage;
 					// Default to New York if location access is denied
 					userLocation = { lat: 40.7128, lng: -74.0060 };
 					loadRecommendedSpots();
+				},
+				{
+					enableHighAccuracy: true,
+					timeout: 10000,
+					maximumAge: 300000 // 5 minutes
 				}
 			);
 		} else {
@@ -309,8 +349,18 @@
 		mapMarkers.forEach(marker => marker.remove());
 		mapMarkers = [];
 
-		// Add new markers
+		// Add new markers with coordinate validation
 		markers.forEach((marker: any) => {
+			// Validate coordinates
+			const lat = typeof marker.lat === 'number' ? marker.lat : parseFloat(marker.lat);
+			const lng = typeof marker.lng === 'number' ? marker.lng : parseFloat(marker.lng);
+			
+			// Skip markers with invalid coordinates
+			if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+				console.warn('Skipping marker with invalid coordinates:', marker);
+				return;
+			}
+
 			const el = document.createElement('div');
 			el.className = 'custom-marker';
 			el.style.width = '24px';
@@ -331,33 +381,33 @@
 			} else if (marker.category === 'river') {
 				el.style.backgroundColor = '#10b981'; // green
 			} else if (marker.category === 'parking') {
-				el.style.backgroundColor = '#f59e0b'; // orange
+				el.style.backgroundColor = '#f59e0b'; // amber
 			} else {
-				el.style.backgroundColor = '#6366f1'; // indigo
+				el.style.backgroundColor = '#6b7280'; // gray default
 			}
 
-			// Create popup content with Midnight Standard dark glass theme
+			// Create popup content
 			let popupContent = `
-				<div style="color: #cdd6f4; min-width: 200px; background: rgba(30, 30, 46, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 12px;">
-					<h3 style="font-weight: bold; margin: 0 0 8px 0; font-size: 14px;">${marker.title || 'Fishing Spot'}</h3>
+				<div style="font-family: system-ui, -apple-system, sans-serif; padding: 8px; max-width: 200px;">
+					<h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #f8fafc;">${marker.title || 'Untitled Location'}</h4>
 			`;
 
-			// Add score if available
+			// Add score for recommended spots
 			if (marker.score !== undefined) {
 				popupContent += `
-					<div style="background: rgba(49, 50, 68, 0.8); padding: 8px; border-radius: 4px; margin-bottom: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
-						<div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: #a6adc8;">
-							<span>Fishing Score:</span>
-							<strong style="color: #cdd6f4;">${Math.round(marker.score)}/100</strong>
-						</div>
-						<div style="background: rgba(255, 255, 255, 0.1); height: 6px; border-radius: 3px; overflow: hidden;">
-							<div style="width: ${marker.score}%; height: 100%; background: ${marker.score > 70 ? '#a6e3a1' : marker.score > 40 ? '#fab387' : '#f38ba8'};"></div>
-						</div>
-					</div>
+					<p style="margin: 0 0 4px 0; font-size: 12px; color: #10b981;">Score: ${Math.round(marker.score)}/100</p>
 				`;
+			}
 
-				// Add breakdown if available
-				if (marker.breakdown) {
+			// Add fish species if available
+			if (marker.metadata?.fish_species) {
+				popupContent += `
+					<p style="font-size: 11px; color: #3b82f6; margin: 0 0 4px 0;">🐟 ${marker.metadata.fish_species}</p>
+				`;
+			}
+
+			// Add description and category
+			if (!marker.isRecommended) {
 					popupContent += `
 					<div style="margin-top: 8px; font-size: 12px; color: #a6adc8;">
 						<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
