@@ -164,16 +164,16 @@
   </div>
 {:else}
   <!-- Desktop Layout: Floating Command Card (Top Left) -->
-  <div class="fixed top-6 left-6 w-[24rem] bg-[#1e1e2e]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl z-50 pointer-events-auto">
+  <div class="fixed top-6 left-6 w-[24rem] bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/5 rounded-2xl p-5 shadow-2xl z-50 pointer-events-auto">
     <!-- Weather Header -->
-    <div class="flex justify-between items-center mb-4">
+    <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
       <div>
-        <h2 class="text-[#cdd6f4] font-medium">Weather</h2>
+        <h2 class="text-[#cdd6f4] font-semibold text-sm tracking-wide">Weather</h2>
         {#if isUsingCachedWeather}
-          <div class="text-[#89b4fa] text-xs">Cached data</div>
+          <div class="text-[#89b4fa] text-xs mt-1">Cached data</div>
         {/if}
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-3">
         <WeatherWidget 
           temperature={temperature} 
           condition={weatherCondition} 
@@ -181,7 +181,7 @@
         />
         {#if isUsingCachedWeather}
           <button 
-            class="text-[#89b4fa] text-xs hover:text-[#b4befe]" 
+            class="text-[#89b4fa] text-xs hover:text-[#b4befe] transition-colors opacity-70 hover:opacity-100"
             on:click={onRefreshWeather}
             title="Refresh weather data"
           >
@@ -193,7 +193,7 @@
     
     <!-- Quick Filters -->
     <div>
-      <h3 class="text-[#cdd6f4] font-medium mb-3">Quick Filters</h3>
+      <h3 class="text-[#cdd6f4] font-semibold text-sm tracking-wide mb-3">Quick Filters</h3>
       {#if loading}
         <div class="text-[#a6adc8] text-sm">
           Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
@@ -209,7 +209,7 @@
           </button>
         </div>
       {:else}
-        <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+        <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto scrollbar-hide">
           {#each speciesOptions as species (species)}
             <FilterChip 
               label={species}
