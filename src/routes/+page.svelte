@@ -8,7 +8,7 @@
 
 	// Map state
 	let mapContainer: HTMLDivElement | null = null;
-	let mapStyle: MapStyle = 'midnight-water';
+	let mapStyle: MapStyle = 'structure';
 	let mapInstance: any = null;
 
 	// App state
@@ -114,8 +114,8 @@
 		};
 
 		const handleToggleLayers = () => {
-			// Cycle through map styles when layers button is clicked
-			const styles: MapStyle[] = ['midnight-water', 'glare-cut', 'satellite', 'nautical'];
+			// Cycle through map styles: Structure → Marine → Satellite
+			const styles: MapStyle[] = ['structure', 'marine', 'satellite'];
 			const currentIndex = styles.indexOf(mapStyle);
 			const nextIndex = (currentIndex + 1) % styles.length;
 			mapStyle = styles[nextIndex];

@@ -91,21 +91,31 @@
 			mapInstance.on('style.load', () => {
 				if (!mapInstance) return;
 				
-				// Hide road layers for chartplotter effect - set opacity to 0.05
-				const layers = mapInstance.getStyle().layers;
-				layers?.forEach(layer => {
-					if (layer.id.includes('road') || layer.id.includes('highway') || layer.id.includes('street') || layer.id.includes('motorway') || layer.id.includes('trunk') || layer.id.includes('primary') || layer.id.includes('secondary') || layer.id.includes('tertiary')) {
-						// Set opacity to almost invisible (0.05) instead of hiding completely
-						mapInstance?.setPaintProperty(layer.id, 'line-opacity', 0.05);
-						mapInstance?.setPaintProperty(layer.id, 'line-color', '#ffffff');
-					}
-				});
+				// Apply different styling based on map style
+				if (mapStyle === 'structure') {
+					// Structure mode: Tron/Sonar styling
+					const layers = mapInstance.getStyle().layers;
+					layers?.forEach(layer => {
+						if (layer.id.includes('road') || layer.id.includes('highway') || layer.id.includes('street') || layer.id.includes('motorway') || layer.id.includes('trunk') || layer.id.includes('primary') || layer.id.includes('secondary') || layer.id.includes('tertiary')) {
+							// Set opacity to almost invisible (0.05) instead of hiding completely
+							mapInstance?.setPaintProperty(layer.id, 'line-opacity', 0.05);
+							mapInstance?.setPaintProperty(layer.id, 'line-color', '#ffffff');
+						}
+					});
 
-				// Add neon blue bathymetry styling (if layer exists)
-				if (mapInstance.getLayer('water')) {
-					mapInstance.setPaintProperty('water', 'fill-color', '#00d4ff');
-					mapInstance.setPaintProperty('water', 'fill-outline-color', '#0099cc');
+					// Add neon blue bathymetry styling for Structure mode
+					if (mapInstance.getLayer('water')) {
+						mapInstance.setPaintProperty('water', 'fill-color', '#11111b');
+						mapInstance.setPaintProperty('water', 'fill-outline-color', '#89dceb');
+					}
+				} else if (mapStyle === 'marine') {
+					// Marine mode: High contrast marine chart
+					if (mapInstance.getLayer('water')) {
+						mapInstance.setPaintProperty('water', 'fill-color', '#006994');
+						mapInstance.setPaintProperty('water', 'fill-outline-color', '#004d6b');
+					}
 				}
+				// Satellite mode keeps default styling
 			});
 
 			// Handle non-critical Mapbox errors

@@ -2,63 +2,40 @@ import type { LngLatLike, MapboxOptions } from 'mapbox-gl';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
-export type MapStyle = 'midnight-water' | 'glare-cut' | 'satellite' | 'nautical' | 'terrain' | 'streets' | 'navigation-day' | 'navigation-night';
+export type MapStyle = 'structure' | 'marine' | 'satellite';
 
-export const MAP_STYLES: Record<MapStyle, { url: string; name: string; description: string; icon: string }> = {
-	'midnight-water': { 
-		url: 'mapbox://styles/mapbox/dark-v11', 
-		name: 'Midnight Water', 
-		description: 'Tron-style cyberpunk sonar with neon bathymetry',
-		icon: '🌊'
-	},
-	'glare-cut': { 
-		url: 'mapbox://styles/mapbox/light-v11', 
-		name: 'Glare Cut', 
-		description: 'High contrast marine chart for daytime use',
-		icon: '☀️'
-	},
-	satellite: { 
-		url: 'mapbox://styles/mapbox/satellite-v9', 
-		name: 'Satellite', 
-		description: 'Satellite imagery',
-		icon: '🛰️'
-	},
-	'nautical': {
-		url: 'mapbox://styles/mapbox/navigation-day-v1',
-		name: 'Nautical',
-		description: 'Navigation-focused map for maritime use',
-		icon: '⚓'
-	},
-	'terrain': {
-		url: 'mapbox://styles/mapbox/outdoors-v11',
-		name: 'Terrain',
-		description: 'Topographic map with elevation',
-		icon: '⛰️'
-	},
-	'streets': {
-		url: 'mapbox://styles/mapbox/streets-v11',
-		name: 'Streets',
-		description: 'Standard street map view',
-		icon: '🏙️'
-	},
-	'navigation-day': {
-		url: 'mapbox://styles/mapbox/navigation-day-v1',
-		name: 'Navigation Day',
-		description: 'Optimized for daytime navigation',
-		icon: '🧭'
-	},
-	'navigation-night': {
-		url: 'mapbox://styles/mapbox/navigation-night-v1',
-		name: 'Navigation Night',
-		description: 'Optimized for nighttime navigation',
-		icon: '🌙'
-	}
+export type MapStyleInfo = {
+  url: string;
+  name: string;
+  description: string;
+  icon: string;
 };
 
-export const MAP_STYLE_GLARE_CUT = MAP_STYLES['glare-cut'].url;
-export const MAP_STYLE_MIDNIGHT_WATER = MAP_STYLES['midnight-water'].url;
+export const MAP_STYLES: Record<MapStyle, MapStyleInfo> = {
+  'structure': { 
+    url: 'mapbox://styles/mapbox/dark-v11', 
+    name: 'Structure', 
+    description: 'Structure visualization and low-light eye protection',
+    icon: '🌃'
+  },
+  'marine': { 
+    url: 'mapbox://styles/mapbox/light-v11', 
+    name: 'Marine', 
+    description: 'Maximum visibility in direct sunlight',
+    icon: '🌊'
+  },
+  'satellite': { 
+    url: 'mapbox://styles/mapbox/satellite-v9', 
+    name: 'Satellite', 
+    description: 'Visual landmark navigation',
+    icon: '🛰️'
+  }
+};
 
 export const MAP_CENTER: LngLatLike = [-73.9857, 40.7484];
+export const MAP_STYLE_STRUCTURE = MAP_STYLES['structure'].url;
+export const MAP_STYLE_MARINE = MAP_STYLES['marine'].url;
+export const MAP_STYLE_SATELLITE = MAP_STYLES['satellite'].url;
 export const MAP_ZOOM = 11;
 
 export const MAP_OPTIONS = {

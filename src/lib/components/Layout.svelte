@@ -125,9 +125,9 @@
           const mapEvent = new CustomEvent('toggleMapLayers');
           window.dispatchEvent(mapEvent);
         }}
-        title="Toggle Day/Night Mode"
+        title="Map Layers"
       >
-        📊
+        ⚙️
       </button>
     </div>
   </div>
@@ -287,7 +287,7 @@
         }}
         title="Map Layers"
       >
-        📊
+        ⚙️
       </button>
     </div>
     
