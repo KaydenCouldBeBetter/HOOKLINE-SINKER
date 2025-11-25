@@ -1,5 +1,6 @@
 {
 	"extends": "./.svelte-kit/tsconfig.json",
+
 	"compilerOptions": {
 		"allowImportingTsExtensions": true,
 		"allowJs": true,
@@ -13,7 +14,13 @@
 		"moduleResolution": "bundler",
 		"types": ["bun-types"],
         "verbatimModuleSyntax": false
-	}
+	},
+	"include": [
+		".svelte-kit/ambient.d.ts",
+		"src",
+		"tests",
+		"server"
+	]
 	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
 	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
 	//

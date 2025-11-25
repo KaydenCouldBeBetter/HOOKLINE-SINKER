@@ -15,7 +15,7 @@ export const MAP_STYLES: Record<MapStyle, MapStyleInfo> = {
   'structure': { 
     url: 'mapbox://styles/mapbox/dark-v11', 
     name: 'Structure', 
-    description: 'Structure visualization and low-light eye protection',
+    description: 'Structure visualization with neon bathymetry depth lines',
     icon: '🌃'
   },
   'marine': { 

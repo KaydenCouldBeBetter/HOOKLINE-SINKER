@@ -14,62 +14,30 @@ export default {
 				'1050': '1050'
 			},
 			colors: {
-				// Midnight Standard - Universal Dark Glass Palette (Catppuccin Mocha)
+				// Midnight Standard - Universal Dark Glass Palette
 				midnight: {
-					// The "Midnight Glass" Surface
-					glass: '#1e1e2e', // Catppuccin Base
-					glassOpacity: 'rgba(30, 30, 46, 0.9)', // Base + 90% Opacity
+					// Core Surfaces
+					glass: '#1e1e2e', // Base - Main background
+					glassOpacity: 'rgba(30, 30, 46, 0.9)', // Base + 90% Opacity for glass effect
 					
 					// Typography (High Contrast)
-					textPrimary: '#cdd6f4', // Text Base - Off White
-					textSecondary: '#a6adc8', // Subtext - Soft Grey
+					textPrimary: '#cdd6f4', // Text Base - Primary content
+					textSecondary: '#a6adc8', // Subtext - Secondary content
+					textMuted: '#6c7086', // Muted text - Tertiary content
 					
-					// Functional Colors (Permanent)
-					primary: '#cba6f7', // Mauve - Main Buttons, Active Tabs
-					selection: '#f5c2e7', // Pink - Selected Chips, Toggles
-					water: '#89dceb', // Sky - GPS Dot, Water Depth
-					warning: '#fab387', // Peach - Low Battery, Weather Alert
+					// Functional Colors (Semantic)
+					primary: '#cba6f7', // Mauve - Main actions, active states
+					selection: '#f5c2e7', // Pink - Selected items, toggles
+					water: '#89dceb', // Sky - Water elements, GPS
+					warning: '#fab387', // Peach - Warnings, alerts
 					
 					// Surface Colors
-					surfaceDark: '#313244', // Surface0 - Search bars, inputs
+					surfaceDark: '#313244', // Surface0 - Inputs, search bars
 					surfaceLight: '#45475a', // Surface1 - Hover states
 					
 					// Border & Subtle Elements
-					border: 'rgba(255, 255, 255, 0.1)', // Subtle 1px rim
-					shadow: 'rgba(0, 0, 0, 0.5)', // Deep shadow for lift
-				},
-				// Legacy Catppuccin for reference (deprecated in v3.0)
-				ctp: {
-					// Base colors
-					rosewater: '#f5e0dc',
-					flamingo: '#f2cdcd',
-					pink: '#f5c2e7',
-					mauve: '#cba6f7',
-					red: '#f38ba8',
-					maroon: '#eba0ac',
-					peach: '#fab387',
-					yellow: '#f9e2af',
-					green: '#a6e3a1',
-					teal: '#94e2d5',
-					sky: '#89dceb',
-					sapphire: '#74c7ec',
-					blue: '#89b4fa',
-					cyan: '#89dceb',
-					lavender: '#b4befe',
-					
-					// Surface colors
-					text: '#cdd6f4',
-					subtext1: '#bac2de',
-					subtext0: '#a6adc8',
-					overlay2: '#9399b2',
-					overlay1: '#7f849c',
-					overlay0: '#6c7086',
-					surface2: '#585b70',
-					surface1: '#45475a',
-					surface0: '#313244',
-					base: '#1e1e2e',
-					mantle: '#181825',
-					crust: '#11111b'
+					border: 'rgba(255, 255, 255, 0.1)', // Subtle borders
+					shadow: 'rgba(0, 0, 0, 0.5)', // Deep shadows for depth
 				}
 			}
 		}

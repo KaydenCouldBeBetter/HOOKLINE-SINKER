@@ -25,11 +25,11 @@
     paddingClasses[padding],
     roundedClasses[rounded.toString()],
     interactive && 'universal-panel--interactive',
-    'bg-[#1e1e2e]/90',
+    'bg-midnight-glass',
     'backdrop-blur-xl',
-    'border border-white/10',
+    'border border-midnight-border',
     'shadow-xl shadow-black/50',
-    'text-[#cdd6f4]',
+    'text-midnight-textPrimary',
     className
   ].filter(Boolean).join(' ');
 </script>
