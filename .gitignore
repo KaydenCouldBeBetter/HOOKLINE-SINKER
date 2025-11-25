@@ -22,6 +22,8 @@ CLAUDE.md
 *.swo
 *~
 .DS_Store
+qodana.yaml
+data
 
 # Logs
 logs/

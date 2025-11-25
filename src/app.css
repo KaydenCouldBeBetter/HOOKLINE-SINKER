@@ -1,1 +1,66 @@
-@import "tailwindcss";
+/* Midnight Standard v3.0 - Universal Dark Glass Architecture */
+/* Design System Imports */
+@import './lib/styles/design-tokens.css';
+@import './lib/styles/components.css';
+
+/* Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base Styles - Universal Midnight Theme */
+html {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #1e1e2e; /* Midnight Base - Universal dark */
+  color: #cdd6f4; /* Text Primary - Off White */
+  line-height: var(--line-height-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus styles for better accessibility - Midnight Standard */
+*:focus-visible {
+  outline: 2px solid #89dceb; /* Sky accent for focus */
+  outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection colors - Midnight Standard */
+::selection {
+  background-color: rgba(203, 166, 247, 0.2); /* Mauve accent with opacity */
+  color: #cdd6f4; /* Text Primary */
+}
+
+/* Scrollbar styles - Midnight Glass */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #313244; /* Surface0 - Dark gray */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #45475a; /* Surface1 - Medium gray */
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #585b70; /* Surface2 - Lighter gray */
+}
