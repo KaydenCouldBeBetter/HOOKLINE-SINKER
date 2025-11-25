@@ -1,30 +1,37 @@
 <script lang="ts">
 	import MapManager from '$lib/components/MapManager.svelte';
-	import StateManager from '$lib/components/StateManager.svelte';
-	import DesktopLayout from '$lib/components/DesktopLayout.svelte';
-	import MobileLayout from '$lib/components/MobileLayout.svelte';
-	import { browser } from '$app/environment';
+	import Layout from '$lib/components/Layout.svelte';
+	import MapStyleSelector from '$lib/components/MapStyleSelector.svelte';
 	import type { MapStyle } from '$lib/config/map';
+	import { cache, CACHE_KEYS, CACHE_TTL } from '$lib/utils/cache';
 
 	// Map state
 	let mapContainer: HTMLDivElement | null = null;
 	let mapStyle: MapStyle = 'midnight-water';
+	let mapInstance: any = null;
+
+	// App state
+	let selectedSpecies: string[] = [];
+	let currentWeather: any = null;
+	let weatherError: string | null = null;
+	let isLoadingWeather: boolean = false;
+	let isUsingCachedWeather: boolean = false;
 
 	// UI state
 	let isMobile: boolean = false;
 
 	// Responsive breakpoint detection
-	$: if (browser) {
+	$: {
 		const checkMobile = () => {
-			isMobile = window.innerWidth < 768;
+			if (typeof window !== 'undefined') {
+				isMobile = window.innerWidth < 768;
+			}
 		};
 		checkMobile();
-		window.addEventListener('resize', checkMobile);
+		if (typeof window !== 'undefined') {
+			window.addEventListener('resize', checkMobile);
+		}
 	}
-
-	// App state
-	let speciesOptions: string[] = ['Bass', 'Walleye', 'Pike', 'Trout'];
-	let selectedSpecies: string[] = [];
 
 	// Event handlers
 	const toggleSpecies = (species: string) => {
@@ -33,32 +40,125 @@
 			: [...selectedSpecies, species];
 	};
 
+	const handleMapReady = (map: any) => {
+		mapInstance = map;
+		loadData();
+	};
+
+	const loadData = async () => {
+		// Load weather data with caching
+		isLoadingWeather = true;
+		weatherError = null;
+		isUsingCachedWeather = false;
+
+		// Try to get from cache first
+		const cachedWeather = cache.get(CACHE_KEYS.WEATHER);
+		if (cachedWeather) {
+			currentWeather = cachedWeather;
+			isUsingCachedWeather = true;
+			isLoadingWeather = false;
+			return;
+		}
+
+		try {
+			const response = await fetch('/api/weather/location?latitude=40.7128&longitude=-74.0060');
+			if (!response.ok) {
+				throw new Error(`Weather API returned ${response.status}: ${response.statusText}`);
+			}
+			const data = await response.json();
+			if (!data || !data.forecast) {
+				throw new Error('Invalid weather data format');
+			}
+			currentWeather = data;
+			// Cache the weather data
+			cache.set(CACHE_KEYS.WEATHER, data, CACHE_TTL.WEATHER);
+		} catch (error) {
+			console.error('Failed to load weather:', error);
+			weatherError = error instanceof Error ? error.message : 'Failed to load weather data';
+			// Set fallback weather data
+			currentWeather = {
+				forecast: [{
+					summary: {
+						maxTemp: 24,
+						condition: 'Partly Cloudy',
+						moonPhase: '🌗'
+					}
+				}]
+			};
+		} finally {
+			isLoadingWeather = false;
+		}
+	};
+
 	const handleResetBearing = () => {
-		// Reset map bearing to north
+		mapInstance?.setBearing(0);
 	};
 
 	const handleToggleLayers = () => {
-		mapStyle = mapStyle === 'midnight-water' ? 'glare-cut' : 'midnight-water';
+		// This function is now handled by MapStyleSelector
+		console.log('Map style selection is now handled by MapStyleSelector component');
 	};
 
 	const handleZoomIn = () => {
-		// Zoom in map
+		mapInstance?.zoomIn();
 	};
 
 	const handleZoomOut = () => {
-		// Zoom out map
+		mapInstance?.zoomOut();
 	};
 
 	const handleGPSLocation = () => {
-		// Get user GPS location
+		if (typeof window !== 'undefined' && navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				(position) => {
+					mapInstance?.flyTo({
+						center: [position.coords.longitude, position.coords.latitude],
+						zoom: 12
+					});
+				},
+				(error) => {
+					console.error('GPS error:', error);
+				}
+			);
+		}
+	};
+
+	const handleMapStyleChange = (newStyle: MapStyle) => {
+		console.log('Map style change received:', newStyle);
+		console.log('Current style before change:', mapStyle);
+		if (!newStyle) {
+			console.log('No style provided, skipping');
+			return;
+		}
+		if (mapStyle === newStyle) {
+			console.log('Style is already set, skipping');
+			return;
+		}
+		mapStyle = newStyle;
+		console.log('Map style set to:', mapStyle);
+	};
+
+	// Test function to verify event system
+	const testStyleChange = () => {
+		console.log('Test: Changing to satellite style');
+		mapStyle = 'satellite';
 	};
 
 	const handleLogCatch = () => {
-		// Open log catch modal
+		if (typeof window !== 'undefined') {
+			alert('Log Catch functionality - placeholder implementation');
+		}
 	};
 
-	const handleToggleDock = () => {
-		// Toggle dock expansion logic here
+	// Cache management functions
+	const refreshWeather = () => {
+		cache.invalidate(CACHE_KEYS.WEATHER);
+		loadData();
+	};
+
+	const refreshSpecies = () => {
+		cache.invalidate(CACHE_KEYS.SPECIES);
+		// Trigger species reload through Layout component
 	};
 </script>
 
@@ -66,47 +166,42 @@
 	<title>HOOK, LINE, & SINKER</title>
 </svelte:head>
 
-<!-- Managers (invisible, handle state and logic) -->
-<StateManager
-	bind:speciesOptions
-	bind:selectedSpecies
-/>
-
 <div class="relative h-screen w-screen overflow-hidden bg-black">
 	<!-- Map -->
-	<MapManager bind:mapStyle={mapStyle} bind:mapContainer />
+	<MapManager bind:mapStyle={mapStyle} bind:mapContainer={mapContainer} onMapReady={handleMapReady} />
 
 	<!-- Responsive UI Layer -->
-	{#if isMobile}
-		<!-- Mobile Layout -->
-		<MobileLayout
-			speciesOptions={speciesOptions}
-			selectedSpecies={selectedSpecies}
-			onToggleSpecies={toggleSpecies}
-			temperature={24}
-			weatherCondition={'cloudy'}
-			moonPhase={'🌗'}
-			mapStyle={mapStyle}
-			onToggleLayers={handleToggleLayers}
-			onResetBearing={handleResetBearing}
-			onGPSLocation={handleGPSLocation}
-			onLogCatch={handleLogCatch}
-			onToggleDock={handleToggleDock}
-		/>
-	{:else}
-		<!-- Desktop Layout -->
-		<DesktopLayout
-			speciesOptions={speciesOptions}
-			selectedSpecies={selectedSpecies}
-			onToggleSpecies={toggleSpecies}
-			temperature={24}
-			weatherCondition={'cloudy'}
-			moonPhase={'🌗'}
-			onResetBearing={handleResetBearing}
-			onToggleLayers={handleToggleLayers}
-			onZoomIn={handleZoomIn}
-			onZoomOut={handleZoomOut}
-			onLogCatch={handleLogCatch}
-		/>
-	{/if}
+	<Layout
+		{selectedSpecies}
+		onToggleSpecies={toggleSpecies}
+		temperature={currentWeather?.forecast?.[0]?.summary?.maxTemp || 24}
+		weatherCondition={currentWeather?.forecast?.[0]?.summary?.condition?.toLowerCase()?.includes('rain') ? 'rainy' : 
+											currentWeather?.forecast?.[0]?.summary?.condition?.toLowerCase()?.includes('cloud') ? 'cloudy' : 'sunny'}
+		moonPhase={currentWeather?.forecast?.[0]?.moonPhase || '🌗'}
+		weatherError={weatherError}
+		isLoadingWeather={isLoadingWeather}
+		isUsingCachedWeather={isUsingCachedWeather}
+		onRefreshWeather={refreshWeather}
+		onResetBearing={handleResetBearing}
+		onGPSLocation={handleGPSLocation}
+		onLogCatch={handleLogCatch}
+		{isMobile}
+	/>
+
+	<!-- Test Button (temporary) -->
+	<div class="absolute top-4 left-4 z-30">
+		<button 
+			class="bg-[#cba6f7] text-[#1e1e2e] px-3 py-1 rounded text-sm"
+			on:click={testStyleChange}
+		>
+			Test: Satellite
+		</button>
+	</div>
+
+	<!-- Map Style Selector -->
+	<MapStyleSelector 
+		bind:currentStyle={mapStyle} 
+		on:styleChange={handleMapStyleChange}
+		{isMobile}
+	/>
 </div>

@@ -23,36 +23,60 @@
 	let currentMapStyle: MapStyle | null = null;
 	let pendingMapStyle: MapStyle | null = null;
 	let mapError: string | null = null;
+	let styleLoadHandler: (() => void) | null = null;
 
 	const accessToken = env[MAPBOX_TOKEN_ENV];
 
 	const syncMapStyle = () => {
 		const targetStyle = mapStyle;
-		if (!targetStyle) return;
+		console.log('Syncing map style to:', targetStyle, 'Current:', currentMapStyle);
+		if (!targetStyle) {
+			console.log('No target style provided, skipping');
+			return;
+		}
+		if (!MAP_STYLES[targetStyle]) {
+			console.log('Invalid target style:', targetStyle, 'Available styles:', Object.keys(MAP_STYLES));
+			return;
+		}
 		if (!mapInstance) {
+			console.log('Map instance not ready, setting pending style');
 			pendingMapStyle = targetStyle;
 			return;
 		}
-		if (currentMapStyle === targetStyle) return;
+		if (currentMapStyle === targetStyle) {
+			console.log('Style already applied, skipping');
+			return;
+		}
 
 		const center = mapInstance.getCenter();
 		const zoom = mapInstance.getZoom();
 		const bearing = mapInstance.getBearing();
 		const pitch = mapInstance.getPitch();
 
-		mapInstance.setStyle(MAP_STYLES[targetStyle].url);
+		console.log('Setting map style to:', MAP_STYLES[targetStyle].url);
 		pendingMapStyle = targetStyle;
 
-		mapInstance.once('style.load', () => {
+		// Remove any existing style.load listener to prevent duplicates
+		if (styleLoadHandler) {
+			mapInstance.off('style.load', styleLoadHandler);
+		}
+
+		// Create new handler
+		styleLoadHandler = () => {
 			if (!mapInstance) return;
-			if (pendingMapStyle && pendingMapStyle !== targetStyle) return;
+			console.log('Style loaded, restoring view state');
 			mapInstance.setCenter(center);
 			mapInstance.setZoom(zoom);
 			mapInstance.setBearing(bearing);
 			mapInstance.setPitch(pitch);
 			currentMapStyle = targetStyle;
 			pendingMapStyle = null;
-		});
+			styleLoadHandler = null;
+			console.log('Map style changed successfully to:', targetStyle);
+		};
+
+		mapInstance.setStyle(MAP_STYLES[targetStyle].url);
+		mapInstance.once('style.load', styleLoadHandler);
 	};
 
 	onMount(() => {

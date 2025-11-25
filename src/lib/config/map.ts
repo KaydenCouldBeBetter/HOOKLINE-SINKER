@@ -1,22 +1,57 @@
-import type { ControlPosition, LngLatLike, MapboxOptions } from 'mapbox-gl';
+import type { LngLatLike, MapboxOptions } from 'mapbox-gl';
 
-export type MapStyle = 'midnight-water' | 'glare-cut' | 'satellite';
+export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
-export const MAP_STYLES: Record<MapStyle, { url: string; name: string; description: string }> = {
+export type MapStyle = 'midnight-water' | 'glare-cut' | 'satellite' | 'ocean-depths' | 'terrain' | 'streets' | 'navigation-day' | 'navigation-night';
+
+export const MAP_STYLES: Record<MapStyle, { url: string; name: string; description: string; icon: string }> = {
 	'midnight-water': { 
 		url: 'mapbox://styles/mapbox/dark-v11', 
 		name: 'Midnight Water', 
-		description: 'Tron-style cyberpunk sonar with neon bathymetry' 
+		description: 'Tron-style cyberpunk sonar with neon bathymetry',
+		icon: '🌊'
 	},
 	'glare-cut': { 
 		url: 'mapbox://styles/mapbox/light-v11', 
 		name: 'Glare Cut', 
-		description: 'High contrast marine chart for daytime use' 
+		description: 'High contrast marine chart for daytime use',
+		icon: '☀️'
 	},
 	satellite: { 
 		url: 'mapbox://styles/mapbox/satellite-v9', 
 		name: 'Satellite', 
-		description: 'Satellite imagery' 
+		description: 'Satellite imagery',
+		icon: '🛰️'
+	},
+	'ocean-depths': {
+		url: 'mapbox://styles/mapbox/navigation-day-v1',
+		name: 'Ocean Depths',
+		description: 'Detailed ocean floor topography',
+		icon: '🌏'
+	},
+	'terrain': {
+		url: 'mapbox://styles/mapbox/outdoors-v11',
+		name: 'Terrain',
+		description: 'Topographic map with elevation',
+		icon: '⛰️'
+	},
+	'streets': {
+		url: 'mapbox://styles/mapbox/streets-v11',
+		name: 'Streets',
+		description: 'Standard street map view',
+		icon: '🏙️'
+	},
+	'navigation-day': {
+		url: 'mapbox://styles/mapbox/navigation-day-v1',
+		name: 'Navigation Day',
+		description: 'Optimized for daytime navigation',
+		icon: '🧭'
+	},
+	'navigation-night': {
+		url: 'mapbox://styles/mapbox/navigation-night-v1',
+		name: 'Navigation Night',
+		description: 'Optimized for nighttime navigation',
+		icon: '🌙'
 	}
 };
 
