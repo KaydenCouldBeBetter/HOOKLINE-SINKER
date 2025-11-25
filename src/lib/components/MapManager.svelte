@@ -18,6 +18,7 @@
 	export let mapContainer: HTMLDivElement | null = null;
 	export let onMapReady: ((map: mapboxgl.Map) => void) | null = null;
 	export let onMapError: ((error: string) => void) | null = null;
+	export let onMapLoad: (() => void) | null = null;
 
 	let mapInstance: mapboxgl.Map | null = null;
 	let currentMapStyle: MapStyle | null = null;

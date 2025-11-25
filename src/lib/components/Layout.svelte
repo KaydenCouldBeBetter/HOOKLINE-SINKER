@@ -104,7 +104,7 @@
   });
 </script>
 
-{:if isMobile}
+{#if isMobile}
   <!-- Mobile Layout -->
   <!-- Bottom: Filter Dock -->
   <div class="absolute bottom-4 left-4 right-4 pointer-events-auto z-20">
