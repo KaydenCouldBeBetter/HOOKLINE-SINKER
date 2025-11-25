@@ -37,6 +37,7 @@
   let error: string | null = null;
   let refreshSpecies: (() => void) | null = null;
   let isUsingCachedSpecies: boolean = false;
+  let filtersOpen: boolean = false;
 
   // Event handlers - delegate to parent
   const handleTabChange = (tab: 'plan' | 'map' | 'spots') => {
@@ -177,7 +178,7 @@
         </div>
       {:else}
         <!-- Spots Tab: Vertical Scrolling List -->
-        <div class="max-h-48 overflow-y-auto scrollbar-hide">
+        <div class="max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
           <!-- Toggle Switch Row -->
           <div class="mb-3">
             <label class="toggle-switch flex justify-between items-center text-sm text-midnight-textSecondary cursor-pointer">
@@ -351,7 +352,7 @@
                 </div>
               </div>
               
-              <!-- Quick Filters -->
+              <!-- Quick Filters Dropdown -->
               <div>
                 <div class="flex justify-between items-center mb-4">
                   <h4 class="text-midnight-textPrimary font-medium text-sm tracking-wide">Quick Filters</h4>
@@ -365,44 +366,68 @@
                     </button>
                   {/if}
                 </div>
-                <div class="flex flex-wrap gap-2">
-                  {#if loading}
-                    <div class="text-[#a6adc8] text-sm py-2 pb-4">Loading species...</div>
-                  {:else if error}
-                    <div class="text-midnight-warning text-sm py-2">
-                      ⚠️ Error loading
-                      <button 
-                        class="ml-2 text-xs underline hover:text-midnight-textSecondary" 
-                        on:click={refreshSpecies}
-                        title="Refresh species data"
-                      >
-                        Retry
-                      </button>
-                    </div>
-                  {:else}
-                    {#each speciesOptions as species (species)}
-                      <FilterChip 
-                        label={species}
-                        active={selectedSpecies.includes(species as string)}
-                        onClick={() => onToggleSpecies(species as string)}
-                      />
-                    {/each}
-                  {/if}
-                </div>
+                
+                <!-- Dropdown Button -->
+                <button 
+                  class="flex items-center gap-2 w-full text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors bg-midnight-surfaceDark rounded-lg px-3 py-2 text-sm border border-midnight-border"
+                  on:click={() => (filtersOpen = !filtersOpen)}
+                >
+                  <span class="text-base">🎣</span>
+                  <span class="font-medium">
+                    {selectedSpecies.length === 0 
+                      ? 'All Species' 
+                      : `${selectedSpecies.length} Selected`
+                    }
+                  </span>
+                  <span class="ml-auto text-xs opacity-70">{filtersOpen ? '▼' : '▲'}</span>
+                </button>
+                
+                <!-- Dropdown Content -->
+                {#if filtersOpen}
+                  <div class="mt-2 space-y-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 border border-midnight-border bg-midnight-surfaceDark rounded-lg p-2">
+                    {#if loading}
+                      <div class="text-[#a6adc8] text-sm py-2">Loading species...</div>
+                    {:else if error}
+                      <div class="text-midnight-warning text-sm py-2">
+                        ⚠️ Error loading
+                        <button 
+                          class="ml-2 text-xs underline hover:text-midnight-textSecondary" 
+                          on:click={refreshSpecies}
+                          title="Refresh species data"
+                        >
+                          Retry
+                        </button>
+                      </div>
+                    {:else}
+                      {#each speciesOptions as species (species)}
+                        <FilterChip 
+                          label={species}
+                          active={selectedSpecies.includes(species as string)}
+                          onClick={() => onToggleSpecies(species as string)}
+                        />
+                      {/each}
+                    {/if}
+                  </div>
+                {/if}
               </div>
               
-              <!-- Map Styles -->
-              <MapStyleSelector 
-                currentStyle={currentMapStyle}
-                isMobile={false}
-                on:styleChange={handleMapStyleSelectorChange}
-              />
+              <!-- Map Theme -->
+              <div>
+                <div class="flex justify-between items-center mb-4">
+                  <h4 class="text-midnight-textPrimary font-medium text-sm tracking-wide">Map Theme</h4>
+                </div>
+                <MapStyleSelector 
+                  currentStyle={currentMapStyle}
+                  isMobile={false}
+                  on:styleChange={handleMapStyleSelectorChange}
+                />
+              </div>
             </div>
           </div>
         </div>
       {:else}
         <!-- Spots Tab: Recommended Fishing Spots -->
-        <div class="h-96 overflow-y-auto scrollbar-hide">
+        <div class="h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
           <h3 class="text-midnight-textPrimary font-semibold text-sm tracking-wide mb-3">Recommended Fishing Spots</h3>
           
           <!-- Toggle Switch Row -->
