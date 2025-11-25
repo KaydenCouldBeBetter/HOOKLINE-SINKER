@@ -11,6 +11,10 @@
     onStyleSelect(style);
     onClose();
   };
+
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose();
+  };
 </script>
 
 {#if isOpen}
@@ -18,12 +22,12 @@
     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
     tabindex="-1"
     on:click={onClose}
-    on:keydown={(e: KeyboardEvent) => e.key === 'Escape' && onClose()}
+    on:keydown={handleKeydown}
     aria-label="Close map layers"
   ></button>
   
   <div 
-    class="fixed bottom-0 left-0 right-0 bg-[#1e1e2e]/95 backdrop-blur-xl border-t border-white/10 rounded-t-2xl shadow-2xl z-50"
+    class="fixed bottom-0 left-0 right-0 bg-midnight-glass backdrop-blur-xl border-t border-midnight-border rounded-t-2xl shadow-2xl z-50"
     role="dialog"
     aria-modal="true"
     aria-labelledby="map-layers-title"
@@ -31,22 +35,21 @@
     style="height: 70vh; max-height: 70vh;"
   >
     <div class="px-6 pb-6 h-full flex flex-col">
-      <h2 id="map-layers-title" class="text-[#cdd6f4] text-lg font-semibold mb-4 flex-shrink-0">Map Style</h2>
+      <h2 id="map-layers-title" class="text-midnight-textPrimary text-lg font-semibold mb-4 flex-shrink-0">Map Style</h2>
       <div class="overflow-y-auto scrollbar-hide" style="flex: 1; min-height: 0;">
         {#each Object.entries(MAP_STYLES) as [key, style]}
           <button
-            class="flex items-center p-4 rounded-xl border-2 transition-all hover:bg-white/5 group border-white/10 w-full mb-3"
-            class:border-[#cba6f7]={currentStyle === key}
+            class="flex items-center p-4 rounded-xl border-2 transition-all hover:bg-white/5 group border-midnight-border w-full mb-3 {currentStyle === key ? 'border-midnight-primary' : ''}"
             on:click={() => selectStyle(key as MapStyle)}
           >
-            <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl mr-4 bg-[#1e1e2e]/50 text-[#a6adc8] group-hover:bg-[#cba6f7]/10 group-hover:text-[#cba6f7] transition-colors {currentStyle === key ? 'bg-[#cba6f7]/20 text-[#cba6f7]' : ''}">
+            <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl mr-4 bg-midnight-surfaceDark text-midnight-textSecondary group-hover:bg-midnight-primary/10 group-hover:text-midnight-primary transition-colors {currentStyle === key ? 'bg-midnight-primary/20 text-midnight-primary' : ''}">
               {style.icon}
             </div>
             <div class="flex-1 text-left">
-              <h3 class="text-[#cdd6f4] font-semibold text-base mb-1 group-hover:text-[#cba6f7] {currentStyle === key ? 'text-[#cba6f7]' : ''}">
+              <h3 class="text-midnight-textPrimary font-semibold text-base mb-1 group-hover:text-midnight-primary {currentStyle === key ? 'text-midnight-primary' : ''}">
                 {style.name}
               </h3>
-              <p class="text-[#a6adc8] text-sm">{style.description}</p>
+              <p class="text-midnight-textSecondary text-sm">{style.description}</p>
             </div>
           </button>
         {/each}

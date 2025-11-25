@@ -13,18 +13,16 @@
     'cursor-pointer select-none',
     'transform hover:scale-105 active:scale-95',
     active 
-      ? 'bg-[#cba6f7] text-[#1e1e2e] border-[#cba6f7] font-bold' 
-      : 'bg-transparent text-[#a6adc8] border-white/10 hover:border-white/20'
+      ? 'bg-midnight-primary text-midnight-glass border-midnight-primary font-bold' 
+      : 'bg-transparent text-midnight-textSecondary border-midnight-border hover:border-white/20'
   ].join(' ');
-  
-  const ariaLabel = `Toggle ${label} filter`;
 </script>
 
 <button 
   class={chipClasses}
   onclick={onClick}
   tabindex="0"
-  aria-label={ariaLabel}
+  aria-label={`Toggle ${label} filter`}
 >
   {label}
 </button>
