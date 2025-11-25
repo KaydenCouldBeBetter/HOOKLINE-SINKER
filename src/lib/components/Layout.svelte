@@ -6,6 +6,7 @@
   import TabNavigation from './TabNavigation.svelte';
   import MapStyleSelector from './MapStyleSelector.svelte';
   import type { MapStyle } from '$lib/config/map';
+  import { MAP_STYLES } from '$lib/config/map';
 
   // Layout props only - no business logic
   export let selectedSpecies: string[] = [];
@@ -149,26 +150,22 @@
         <!-- Map Tab: Map Style Controls -->
         <div class="space-y-4">
           <div class="text-center">
-            <h3 class="text-midnight-textPrimary font-semibold text-sm tracking-wide mb-4">Map Style</h3>
+            <h3 class="text-midnight-textPrimary font-semibold text-sm tracking-wide mb-4">Map Theme</h3>
           </div>
           
           <div class="grid grid-cols-2 gap-3">
-            {#each ['structure', 'satellite', 'terrain', 'night'] as style (style)}
+            {#each Object.entries(MAP_STYLES) as [styleKey, styleInfo] (styleKey)}
               <button
                 class="flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 ${
-                  currentMapStyle === style
+                  currentMapStyle === styleKey
                     ? 'bg-purple-500 text-white border-purple-500'
                     : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700 hover:text-gray-300'
                 }"
-                on:click={() => handleMapStyleChange(style as MapStyle)}
-                title={style === 'structure' ? 'Midnight Water' : style === 'satellite' ? 'Satellite' : style === 'terrain' ? 'Terrain' : 'Night'}
+                on:click={() => handleMapStyleChange(styleKey as MapStyle)}
+                title={styleInfo.name}
               >
-                <span class="text-2xl mb-2">
-                  {style === 'structure' ? '🌊' : style === 'satellite' ? '🛰️' : style === 'terrain' ? '⛰️' : '🌙'}
-                </span>
-                <span class="text-xs font-medium">
-                  {style === 'structure' ? 'Midnight Water' : style === 'satellite' ? 'Satellite' : style === 'terrain' ? 'Terrain' : 'Night'}
-                </span>
+                <span class="text-2xl mb-2">{styleInfo.icon}</span>
+                <span class="text-xs font-medium">{styleInfo.name}</span>
               </button>
             {/each}
           </div>
