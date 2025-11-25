@@ -142,12 +142,14 @@
 		window.addEventListener('mapZoomOut', handleZoomOut);
 		window.addEventListener('toggleMenu', handleToggleMenu);
 		window.addEventListener('toggleProfile', handleToggleProfile);
+		window.addEventListener('mapStyleChange', handleMapStyleChange);
 
 		return () => {
 			window.removeEventListener('mapZoomIn', handleZoomIn);
 			window.removeEventListener('mapZoomOut', handleZoomOut);
 			window.removeEventListener('toggleMenu', handleToggleMenu);
 			window.removeEventListener('toggleProfile', handleToggleProfile);
+			window.removeEventListener('mapStyleChange', handleMapStyleChange);
 		};
 	});
 
@@ -167,8 +169,9 @@
 		}
 	};
 
-	const handleMapStyleChange = (event: CustomEvent<MapStyle>) => {
-		const newStyle = event.detail;
+	const handleMapStyleChange = (event: Event) => {
+		const customEvent = event as CustomEvent<MapStyle>;
+		const newStyle = customEvent.detail;
 		if (!newStyle || mapStyle === newStyle) return;
 		mapStyle = newStyle;
 	};
@@ -399,216 +402,7 @@
 	<title>HOOK, LINE, & SINKER</title>
 </svelte:head>
 
-<!-- Fishing Conditions Controls -->
-<div class="fishing-controls" style="position: absolute; top: 80px; right: 15px; z-index: 10; background: white; padding: 12px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); width: 240px; max-width: 240px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="margin: 0; font-size: 14px; color: #333;">Recommended Fishing Spots</h3>
-    </div>
-    
-    <!-- Toggle Switch Row -->
-    <div style="margin-bottom: 12px; position: relative; z-index: 20;">
-        <label class="toggle-switch" style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #555; cursor: pointer;">
-            <span>{showRecommendedOnly ? 'Best Only' : 'All Spots'}</span>
-            <div style="position: relative; display: inline-block; width: 45px; height: 22px; margin-left: 8px;">
-                <input 
-	type="checkbox" 
-	bind:checked={showRecommendedOnly} 
-	on:click={toggleShowRecommended} 
-	style="opacity: 0; width: 0; height: 0; position: absolute;"
->
-                <span class="slider round"></span>
-            </div>
-        </label>
-    </div>
-    
-    {#if userLocation}
-        <div style="margin-bottom: 10px;">
-            <label style="display: block; margin-bottom: 6px; font-size: 12px; color: #555;">
-                Radius: {searchRadius}mi
-            </label>
-            <input 
-                type="range" 
-                min="5" 
-                max="50" 
-                step="5"
-                bind:value={searchRadius}
-                on:input={() => loadRecommendedSpots()}
-                style="width: 100%; cursor: pointer; height: 4px;"
-                aria-label="Search radius in miles"
-            >
-            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #777; margin-top: 2px;">
-                <span>5mi</span>
-                <span>50mi</span>
-            </div>
-        </div>
-        
-        {#if recommendationError}
-			<div style="margin-top: 10px; padding: 8px; background: #fee2e2; color: #b91c1c; border-radius: 4px; font-size: 13px;">
-				{recommendationError}
-			</div>
-		{/if}
-        
-        {#if recommendedSpots.length > 0}
-            <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px;">
-                <h4 style="margin: 0 0 6px 0; font-size: 12px; color: #444;">Top Spots:</h4>
-                <div style="max-height: 200px; overflow-y: auto;">
-                    {#each recommendedSpots.slice(0, 5) as spot, i}
-                        <div 
-                            on:click|stopPropagation={() => {
-                                if (mapInstance) {
-                                    // First, close any open popups
-                                    mapMarkers.forEach(m => {
-                                        const popup = m.getPopup();
-                                        if (popup && popup.isOpen()) {
-                                            m.togglePopup();
-                                        }
-                                    });
-                                    
-                                    // Then fly to the selected spot
-                                    mapInstance.flyTo({
-                                        center: [spot.location.longitude, spot.location.latitude],
-                                        zoom: 12,
-                                        essential: true // This animation is essential and cannot be interrupted
-                                    });
-                                    
-                                    // Find and highlight the marker
-                                    const marker = mapMarkers.find(m => {
-                                        const lngLat = m.getLngLat();
-                                        return lngLat.lng === spot.location.longitude && 
-                                               lngLat.lat === spot.location.latitude;
-                                    });
-                                    
-                                    if (marker) {
-                                        // Small delay to ensure the flyTo is complete
-                                        setTimeout(() => {
-                                            marker.getElement().style.transform = 'scale(1.3)';
-                                            marker.getElement().style.zIndex = '1000';
-                                            marker.togglePopup();
-                                        }, 300);
-                                    }
-                                }
-                            }}
-                            style="padding: 8px; margin-bottom: 6px; background: #f8fafc; border-radius: 4px; cursor: pointer; transition: background 0.2s;"
-                            on:mouseenter={() => {
-                                const marker = mapMarkers.find(m => {
-                                    const lngLat = m.getLngLat();
-                                    return lngLat.lng === spot.location.longitude && 
-                                           lngLat.lat === spot.location.latitude;
-                                });
-                                if (marker) {
-                                    marker.getElement().style.transform = 'scale(1.3)';
-                                    marker.getElement().style.zIndex = '1000';
-                                    marker.togglePopup();
-                                }
-                            }}
-                            on:mouseleave={() => {
-                                const marker = mapMarkers.find(m => {
-                                    const lngLat = m.getLngLat();
-                                    return lngLat.lng === spot.location.longitude && 
-                                           lngLat.lat === spot.location.latitude;
-                                });
-                                if (marker) {
-                                    marker.getElement().style.transform = 'scale(1)';
-                                    marker.getElement().style.zIndex = '1';
-                                    if (marker.getPopup().isOpen()) {
-                                        marker.togglePopup();
-                                    }
-                                }
-                            }}
-                        >
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-weight: 500; font-size: 13px;">{i + 1}. {spot.location.name || 'Fishing Spot'}</span>
-                                <span style="font-weight: bold; color: #3b82f6;">{Math.round(spot.score)}</span>
-                            </div>
-                            <div style="font-size: 11px; color: #666; margin-top: 2px;">
-                                {spot.distance?.toFixed(1) || '0.0'} mi away
-                            </div>
-                        </div>
-                    {/each}
-                </div>
-            </div>
-        {/if}
-    {:else}
-        <div style="color: #666; font-size: 13px; text-align: center; padding: 10px 0;">
-            {isLoadingRecommendations ? 'Detecting your location...' : 'Enable location access to find the best fishing spots near you.'}
-        </div>
-    {/if}
-</div>
 
-<style>
-	.toggle-switch {
-		display: flex;
-		align-items: center;
-		min-height: 40px;
-	}
-
-	.toggle-switch input {
-		opacity: 0;
-		left: 0;
-	}
-
-	.slider {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: #e2e8f0;
-		transition: .4s;
-		border-radius: 24px;
-	}
-
-	.slider:before {
-		position: absolute;
-		content: "";
-		height: 16px;
-		width: 16px;
-		left: 4px;
-		bottom: 4px;
-		background-color: white;
-		transition: .4s;
-		border-radius: 50%;
-	}
-
-	input:checked + .slider {
-		background-color: #3b82f6;
-	}
-
-	input:focus + .slider {
-		box-shadow: 0 0 1px #3b82f6;
-	}
-
-	input:checked + .slider:before {
-		transform: translateX(26px);
-	}
-
-	/* Rounded sliders */
-	.slider.round {
-		border-radius: 24px;
-	}
-
-	.slider.round:before {
-		border-radius: 50%;
-	}
-
-	/* Ensure the slider controls are above the map */
-	.fishing-controls {
-		z-index: 1000;
-	}
-
-	/* Make sure the range input is clickable */
-	input[type="range"] {
-		position: relative;
-		z-index: 1;
-	}
-
-	/* Improve touch targets */
-	.toggle-switch > div {
-		height: 24px;
-		display: flex;
-		align-items: center;
-	}
-</style>
 
 <div class="relative h-screen w-screen overflow-hidden bg-black">
 	<!-- Map -->
@@ -624,9 +418,53 @@
 		moonPhase={currentWeather?.forecast?.[0]?.moonPhase || '🌗'}
 		isUsingCachedWeather={isUsingCachedWeather}
 		onRefreshWeather={refreshWeather}
-		onLogCatch={handleLogCatch}
 		{isMobile}
 		currentMapStyle={mapStyle}
-		onMapStyleChange={(style: MapStyle) => mapStyle = style}
+		{showRecommendedOnly}
+		toggleShowRecommended={() => showRecommendedOnly = !showRecommendedOnly}
+		{userLocation}
+		{searchRadius}
+		{loadRecommendedSpots}
+		recommendationError={recommendationError}
+		{recommendedSpots}
+		isLoadingRecommendations={isLoadingRecommendations}
+		mapInstance={mapInstance}
+		mapMarkers={mapMarkers}
 	/>
 </div>
+
+<style>
+	/* Mapbox popup styling to match Midnight Standard theme */
+	:global(.mapboxgl-popup) {
+		background: transparent !important;
+	}
+
+	:global(.mapboxgl-popup-content) {
+		background: rgba(30, 30, 46, 0.9) !important;
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		border-radius: 8px !important;
+		padding: 0 !important;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+		backdrop-filter: blur(12px) !important;
+	}
+
+	:global(.mapboxgl-popup-tip) {
+		border-top-color: rgba(30, 30, 46, 0.9) !important;
+		border-bottom-color: rgba(30, 30, 46, 0.9) !important;
+	}
+
+	:global(.mapboxgl-popup-close-button) {
+		color: #a6adc8 !important;
+		background: transparent !important;
+		font-size: 20px !important;
+		padding: 4px !important;
+		right: 4px !important;
+		top: 4px !important;
+	}
+
+	:global(.mapboxgl-popup-close-button:hover) {
+		color: #cdd6f4 !important;
+		background: rgba(255, 255, 255, 0.1) !important;
+		border-radius: 4px !important;
+	}
+</style>

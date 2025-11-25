@@ -2,8 +2,6 @@
 <script lang="ts">
   import FilterChip from './FilterChip.svelte';
   import WeatherWidget from './WeatherWidget.svelte';
-  import MapLayersFlyout from './MapLayersFlyout.svelte';
-  import MapLayersModal from './MapLayersModal.svelte';
   import { onMount } from 'svelte';
   import { cache, CACHE_KEYS, CACHE_TTL } from '$lib/utils/cache';
   import type { MapStyle } from '$lib/config/map';
@@ -15,10 +13,28 @@
   export let moonPhase: string = '🌗';
   export let isUsingCachedWeather: boolean = false;
   export let onRefreshWeather: () => void = () => {};
-  export let onLogCatch: () => void = () => {};
   export let isMobile: boolean = false;
   export let currentMapStyle: MapStyle = 'structure';
-  export let onMapStyleChange: (style: MapStyle) => void = () => {};
+  
+  // Recommended Spots props
+  export let showRecommendedOnly: boolean = false;
+  export let toggleShowRecommended: () => void = () => {};
+  export let userLocation: { lat: number; lng: number } | null = null;
+  export let searchRadius: number = 25;
+  export let loadRecommendedSpots: () => void = () => {};
+  export let recommendationError: string | null = null;
+  export let recommendedSpots: any[] = [];
+  export let isLoadingRecommendations: boolean = false;
+  export let mapInstance: any = null;
+  export let mapMarkers: any[] = [];
+  
+  // Map styles data
+  const MAP_STYLES = [
+    { key: 'structure', name: 'Midnight Water', icon: '🌊' },
+    { key: 'satellite', name: 'Satellite', icon: '🛰️' },
+    { key: 'terrain', name: 'Terrain', icon: '⛰️' },
+    { key: 'night', name: 'Night', icon: '🌙' }
+  ];
 
   // Local state
   let speciesOptions: string[] = [];
@@ -28,25 +44,15 @@
   const maxRetries: number = 3;
   let isUsingCachedSpecies: boolean = false;
 
-  // Map layers UI state
-  let showFlyout: boolean = false;
-  let showModal: boolean = false;
+  // Map layers UI state (no longer needed)
+  // Tab state for unified information architecture
+  let activeTab: 'plan' | 'spots' = 'plan';
 
   // Event handlers
-  const handleMapLayersClick = () => {
-    if (isMobile) {
-      showModal = !showModal;
-    } else {
-      showFlyout = !showFlyout;
-    }
-  };
-
   const handleStyleSelect = (style: MapStyle) => {
-    onMapStyleChange(style);
-  };
-
-  const handleModalClose = () => {
-    showModal = false;
+    // Dispatch custom event for parent component to handle
+    const mapStyleEvent = new CustomEvent('mapStyleChange', { detail: style });
+    window.dispatchEvent(mapStyleEvent);
   };
 
   const refreshSpecies = () => {
@@ -124,91 +130,230 @@
     </div>
   </div>
   
-  <!-- Top Right: Map Tools (Rarely Used Actions) -->
-  <div class="fixed top-4 right-4 flex gap-2 z-50 pointer-events-auto">
-    <!-- Layers Button -->
-    <div class="bg-midnight-glass backdrop-blur-xl border border-midnight-border rounded-full p-3 shadow-xl hover:bg-midnight-surfaceLight transition-all duration-200">
-      <button 
-        class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors flex items-center justify-center"
-        on:click={handleMapLayersClick}
-        title="Map Layers"
-      >
-        🗂️
-      </button>
-    </div>
-  </div>
-  
-  <!-- Bottom Edge: Filter Dock (Primary Navigation Controller) -->
+    
+  <!-- Bottom Edge: Tabbed Control Dock -->
   <div class="fixed bottom-0 left-0 right-0 bg-midnight-glass backdrop-blur-xl border-t border-midnight-border rounded-t-2xl shadow-2xl z-50 pointer-events-auto">
-    <div class="flex items-center justify-between p-4">
-      <!-- Menu Icon (Left) -->
-      <div class="bg-midnight-glass backdrop-blur-xl border border-midnight-border rounded-full p-3 h-11 flex items-center justify-center">
-        <button class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors" title="Main Menu" on:click={() => {
-          const menuEvent = new CustomEvent('toggleMenu');
-          window.dispatchEvent(menuEvent);
-        }}>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
+    <!-- Tab Toggle Header -->
+    <div class="flex justify-center p-3 border-b border-midnight-border">
+      <div class="flex bg-midnight-surfaceDark rounded-lg p-1">
+        <button 
+          class="px-4 py-1.5 text-sm font-medium rounded transition-colors ${
+            activeTab === 'plan' 
+              ? 'bg-midnight-primary text-midnight-glass' 
+              : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
+          }"
+          on:click={() => activeTab = 'plan'}
+        >
+          Plan
+        </button>
+        <button 
+          class="px-4 py-1.5 text-sm font-medium rounded transition-colors ${
+            activeTab === 'spots' 
+              ? 'bg-midnight-primary text-midnight-glass' 
+              : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
+          }"
+          on:click={() => activeTab = 'spots'}
+        >
+          Spots
         </button>
       </div>
-      
-      <!-- Horizontal Chip Carousel (Center/Right) -->
-      <div class="flex-1 ml-4 overflow-x-auto scrollbar-hide">
-        <div class="flex gap-2 flex-nowrap">
-          {#if loading}
-            <div class="text-midnight-textSecondary text-sm h-11 flex items-center">
-              Loading species...
+    </div>
+    
+    <!-- Tab Content -->
+    <div class="p-4">
+      {#if activeTab === 'plan'}
+        <!-- Plan Tab: Horizontal Filter Chips -->
+        <div class="flex items-center gap-3">
+          <!-- Menu Icon (Left) -->
+          <div class="bg-midnight-glass backdrop-blur-xl border border-midnight-border rounded-full p-3 h-11 flex items-center justify-center">
+            <button class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors" title="Main Menu" on:click={() => {
+              const menuEvent = new CustomEvent('toggleMenu');
+              window.dispatchEvent(menuEvent);
+            }}>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Horizontal Chip Carousel (Center/Right) -->
+          <div class="flex-1 overflow-x-auto scrollbar-hide">
+            <div class="flex gap-2 flex-nowrap">
+              {#if loading}
+                <div class="text-midnight-textSecondary text-sm h-11 flex items-center">
+                  Loading species...
+                </div>
+              {:else if error}
+                <div class="text-midnight-warning text-sm h-11 flex items-center">
+                  ⚠️ Error loading
+                  <button 
+                    class="ml-2 text-xs underline hover:text-midnight-textSecondary" 
+                    on:click={refreshSpecies}
+                    title="Refresh species data"
+                  >
+                    Retry
+                  </button>
+                </div>
+              {:else}
+                {#each speciesOptions as species (species)}
+                  <FilterChip 
+                    label={species}
+                    active={selectedSpecies.includes(species as string)}
+                    onClick={() => onToggleSpecies(species as string)}
+                  />
+                {/each}
+              {/if}
             </div>
-          {:else if error}
-            <div class="text-midnight-warning text-sm h-11 flex items-center">
-              ⚠️ Error loading
-              <button 
-                class="ml-2 text-xs underline hover:text-midnight-textSecondary" 
-                on:click={refreshSpecies}
-                title="Refresh species data"
-              >
-                Retry
-              </button>
+          </div>
+        </div>
+        
+        <!-- Map Styles Section (Mobile Plan Tab) -->
+        <div class="mt-4 pt-4 border-t border-midnight-border">
+          <div class="flex justify-between items-center mb-3">
+            <h4 class="text-midnight-textPrimary font-medium text-sm tracking-wide">Map Style</h4>
+          </div>
+          <div class="overflow-x-auto scrollbar-hide">
+            <div class="flex gap-2 flex-nowrap pb-1">
+              {#each MAP_STYLES as style (style.key)}
+                <button
+                  class="px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 border whitespace-nowrap flex-shrink-0 ${
+                    currentMapStyle === style.key
+                      ? 'bg-midnight-primary text-midnight-glass border-midnight-primary'
+                      : 'bg-midnight-surfaceDark text-midnight-textSecondary border-midnight-border hover:bg-midnight-surfaceLight hover:text-midnight-textPrimary'
+                  }"
+                  on:click={() => handleStyleSelect(style.key as MapStyle)}
+                  title={style.name}
+                >
+                  <span class="mr-1">{style.icon}</span>
+                  {style.name}
+                </button>
+              {/each}
             </div>
+          </div>
+        </div>
+      {:else}
+        <!-- Spots Tab: Vertical Scrolling List -->
+        <div class="max-h-48 overflow-y-auto scrollbar-hide">
+          <!-- Toggle Switch Row -->
+          <div class="mb-3">
+            <label class="toggle-switch flex justify-between items-center text-sm text-midnight-textSecondary cursor-pointer">
+              <span>{showRecommendedOnly ? 'Best Only' : 'All Spots'}</span>
+              <div class="relative inline-block w-11 h-5.5 ml-2">
+                <input 
+                  type="checkbox" 
+                  bind:checked={showRecommendedOnly} 
+                  on:click={toggleShowRecommended} 
+                  class="opacity-0 w-0 h-0 absolute"
+                >
+                <span class="slider round"></span>
+              </div>
+            </label>
+          </div>
+          
+          {#if userLocation}
+            {#if recommendationError}
+              <div class="p-2 bg-orange-500/20 text-orange-300 border border-orange-500/30 rounded text-sm mb-2">
+                {recommendationError}
+              </div>
+            {/if}
+            
+            {#if recommendedSpots.length > 0}
+              <div class="space-y-1.5">
+                {#each recommendedSpots.slice(0, 5) as spot, i}
+                  <button
+                    type="button"
+                    aria-label={`Navigate to ${spot.location.name || 'Fishing Spot'}, score ${Math.round(spot.score)}`}
+                    on:click|stopPropagation={() => {
+                      if (mapInstance) {
+                        // First, close any open popups
+                        mapMarkers.forEach(m => {
+                          const popup = m.getPopup();
+                          if (popup && popup.isOpen()) {
+                            m.togglePopup();
+                          }
+                        });
+                        
+                        // Then fly to the selected spot
+                        mapInstance.flyTo({
+                          center: [spot.location.longitude, spot.location.latitude],
+                          zoom: 12,
+                          essential: true
+                        });
+                        
+                        // Find and highlight the marker
+                        const marker = mapMarkers.find(m => {
+                          const lngLat = m.getLngLat();
+                          return lngLat.lng === spot.location.longitude && 
+                                 lngLat.lat === spot.location.latitude;
+                        });
+                        
+                        if (marker) {
+                          setTimeout(() => {
+                            marker.getElement().style.transform = 'scale(1.3)';
+                            marker.getElement().style.zIndex = '1000';
+                            marker.togglePopup();
+                          }, 300);
+                        }
+                      }
+                    }}
+                    on:keydown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.target?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                      }
+                    }}
+                    class="p-2 bg-surface-dark/80 border border-white/5 rounded cursor-pointer transition-colors w-full text-left hover:bg-surface-dark"
+                  >
+                    <div class="flex justify-between items-center">
+                      <span class="font-medium text-sm text-midnight-textPrimary">{i + 1}. {spot.location.name || 'Fishing Spot'}</span>
+                      <span class="font-bold text-cyan-300">{Math.round(spot.score)}</span>
+                    </div>
+                    <div class="text-xs text-midnight-textMuted mt-0.5">
+                      {spot.distance?.toFixed(1) || '0.0'} mi away
+                    </div>
+                  </button>
+                {/each}
+              </div>
+            {/if}
           {:else}
-            {#each speciesOptions as species (species)}
-              <FilterChip 
-                label={species}
-                active={selectedSpecies.includes(species as string)}
-                onClick={() => onToggleSpecies(species as string)}
-              />
-            {/each}
+            <div class="text-midnight-textMuted text-sm text-center py-5">
+              {isLoadingRecommendations ? 'Detecting your location...' : 'Enable location access to find the best fishing spots near you.'}
+            </div>
           {/if}
         </div>
-      </div>
+      {/if}
     </div>
   </div>
   
-  <!-- Bottom Right: Primary Action (Critical In-the-Moment Action) -->
-  <div class="fixed bottom-20 right-4 bg-midnight-primary rounded-full p-4 shadow-xl hover:bg-midnight-primary/80 transition-all duration-200 z-50 pointer-events-auto">
-    <button 
-      class="text-[#1e1e2e] text-xl flex items-center justify-center"
-      on:click={onLogCatch}
-      title="Log Catch"
-    >
-      🎣
-    </button>
-  </div>
-{:else}
+    
+  {:else}
   <!-- Desktop Layout: Floating Command Card (Top Left) -->
   <div class="fixed top-6 left-6 w-[380px] bg-midnight-glass backdrop-blur-xl border border-midnight-border rounded-2xl shadow-2xl z-50 pointer-events-auto">
-    <!-- Header Row -->
+    <!-- Header Row with Tabs -->
     <div class="flex justify-between items-center p-4 border-b border-midnight-border">
-      <!-- Hamburger Menu -->
-      <button class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors p-2 hover:bg-midnight-surfaceDark rounded-lg" title="Main Menu" on:click={() => {
-        const menuEvent = new CustomEvent('toggleMenu');
-        window.dispatchEvent(menuEvent);
-      }}>
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-      </button>
+      <!-- Tab Navigation -->
+      <div class="flex bg-midnight-surfaceDark rounded-lg p-1">
+        <button 
+          class="px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+            activeTab === 'plan' 
+              ? 'bg-midnight-primary text-midnight-glass' 
+              : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
+          }"
+          on:click={() => activeTab = 'plan'}
+        >
+          Plan
+        </button>
+        <button 
+          class="px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+            activeTab === 'spots' 
+              ? 'bg-midnight-primary text-midnight-glass' 
+              : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
+          }"
+          on:click={() => activeTab = 'spots'}
+        >
+          Spots
+        </button>
+      </div>
       
       <!-- User Avatar -->
       <button class="w-8 h-8 bg-midnight-water rounded-full flex items-center justify-center text-midnight-glass font-semibold text-sm hover:bg-midnight-water/80 transition-colors cursor-pointer" title="User Profile" on:click={() => {
@@ -219,113 +364,254 @@
       </button>
     </div>
     
-    <!-- Content Area -->
-    <div class="p-5 overflow-hidden border-b border-midnight-border">
-      <!-- Current Conditions Section -->
-      <div class="mb-5">
-        <h3 class="text-midnight-textPrimary font-semibold text-sm tracking-wide mb-3">Current Conditions</h3>
-        <div class="bg-midnight-surfaceDark rounded-lg p-4 border border-midnight-border/5">
-          <!-- Go/No-Go Weather Info -->
-          <div class="flex justify-between items-center mb-3">
-            <div>
-              <h4 class="text-midnight-textPrimary font-medium">Weather Status</h4>
-              {#if isUsingCachedWeather}
-                <div class="text-midnight-water text-xs mt-1">Cached data</div>
-              {/if}
-            </div>
-            <div class="flex items-center gap-3">
-              <WeatherWidget 
-                temperature={temperature} 
-                condition={weatherCondition} 
-                moonPhase={moonPhase}
-              />
-              {#if isUsingCachedWeather}
-                <button 
-                  class="text-midnight-water text-xs hover:text-midnight-water/80 transition-colors opacity-70 hover:opacity-100"
-                  on:click={onRefreshWeather}
-                  title="Refresh weather data"
-                >
-                  🔄
-                </button>
-              {/if}
-            </div>
-          </div>
-          
-          <!-- Quick Filters -->
+    <!-- Tab Content Area -->
+    <div class="p-5 overflow-hidden">
+      {#if activeTab === 'plan'}
+        <!-- Plan Tab: Weather and Filters -->
+        <div class="space-y-4">
+          <!-- Current Conditions Section -->
           <div>
-            <div class="flex justify-between items-center mb-4">
-              <h4 class="text-midnight-textPrimary font-medium text-sm tracking-wide">Quick Filters</h4>
-              {#if isUsingCachedSpecies}
-                <button 
-                  class="text-midnight-water text-xs hover:text-midnight-water/80 transition-colors opacity-70 hover:opacity-100 flex items-center gap-1"
-                  on:click={refreshSpecies}
-                  title="Refresh species data"
-                >
-                  <span class="text-[10px]">Cached</span>
-                  🔄
-                </button>
-              {/if}
-            </div>
-            {#if loading}
-              <div class="text-midnight-textSecondary text-sm py-2">
-                <div class="flex items-center gap-2">
-                  <div class="w-2 h-2 bg-midnight-primary rounded-full animate-pulse"></div>
-                  Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
+            <h3 class="text-midnight-textPrimary font-semibold text-sm tracking-wide mb-3">Current Conditions</h3>
+            <div class="bg-midnight-surfaceDark rounded-lg p-4 border border-midnight-border/5">
+              <!-- Go/No-Go Weather Info -->
+              <div class="flex justify-between items-center mb-3">
+                <div>
+                  <h4 class="text-midnight-textPrimary font-medium">Weather Status</h4>
+                  {#if isUsingCachedWeather}
+                    <div class="text-midnight-water text-xs mt-1">Cached data</div>
+                  {/if}
                 </div>
-              </div>
-            {:else if error}
-              <div class="text-midnight-warning text-sm py-2">
-                <div class="flex items-center gap-2">
-                  ⚠️ 
-                  <span>Error: {error}</span>
-                  <button 
-                    class="ml-2 text-xs underline hover:text-midnight-textSecondary transition-colors" 
-                    on:click={refreshSpecies}
-                  >
-                    Retry
-                  </button>
-                </div>
-              </div>
-            {:else}
-              <div class="flex flex-wrap gap-2 max-h-40 overflow-y-auto scrollbar-hide pr-1 w-full">
-                {#each speciesOptions as species (species)}
-                  <FilterChip 
-                    label={species}
-                    active={selectedSpecies.includes(species as string)}
-                    onClick={() => onToggleSpecies(species as string)}
+                <div class="flex items-center gap-3">
+                  <WeatherWidget 
+                    temperature={temperature} 
+                    condition={weatherCondition} 
+                    moonPhase={moonPhase}
                   />
-                {/each}
+                  {#if isUsingCachedWeather}
+                    <button 
+                      class="text-midnight-water text-xs hover:text-midnight-water/80 transition-colors opacity-70 hover:opacity-100"
+                      on:click={onRefreshWeather}
+                      title="Refresh weather data"
+                    >
+                      🔄
+                    </button>
+                  {/if}
+                </div>
               </div>
-            {/if}
+              
+              <!-- Quick Filters -->
+              <div>
+                <div class="flex justify-between items-center mb-4">
+                  <h4 class="text-midnight-textPrimary font-medium text-sm tracking-wide">Quick Filters</h4>
+                  {#if isUsingCachedSpecies}
+                    <button 
+                      class="text-midnight-water text-xs hover:text-midnight-water/80 transition-colors opacity-70 hover:opacity-100"
+                      on:click={refreshSpecies}
+                      title="Refresh species data"
+                    >
+                      🔄
+                    </button>
+                  {/if}
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  {#if loading}
+                    <div class="text-midnight-textSecondary text-sm py-2">Loading species...</div>
+                  {:else if error}
+                    <div class="text-midnight-warning text-sm py-2">
+                      ⚠️ Error loading
+                      <button 
+                        class="ml-2 text-xs underline hover:text-midnight-textSecondary" 
+                        on:click={refreshSpecies}
+                        title="Refresh species data"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  {:else}
+                    {#each speciesOptions as species (species)}
+                      <FilterChip 
+                        label={species}
+                        active={selectedSpecies.includes(species as string)}
+                        onClick={() => onToggleSpecies(species as string)}
+                      />
+                    {/each}
+                  {/if}
+                </div>
+              </div>
+              
+              <!-- Map Styles -->
+              <div>
+                <div class="flex justify-between items-center mb-4">
+                  <h4 class="text-midnight-textPrimary font-medium text-sm tracking-wide">Map Style</h4>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  {#each MAP_STYLES as style (style.key)}
+                    <button
+                      class="px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 border ${
+                        currentMapStyle === style.key
+                          ? 'bg-midnight-primary text-midnight-glass border-midnight-primary'
+                          : 'bg-midnight-surfaceDark text-midnight-textSecondary border-midnight-border hover:bg-midnight-surfaceLight hover:text-midnight-textPrimary'
+                      }"
+                      on:click={() => handleStyleSelect(style.key as MapStyle)}
+                      title={style.name}
+                    >
+                      <span class="mr-1">{style.icon}</span>
+                      {style.name}
+                    </button>
+                  {/each}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <!-- Spot Details Section (Hidden by default, shown when location selected) -->
-      <!-- This will be populated when user clicks a lake/spot -->
+      {:else}
+        <!-- Spots Tab: Recommended Fishing Spots -->
+        <div class="h-96 overflow-y-auto scrollbar-hide">
+          <h3 class="text-midnight-textPrimary font-semibold text-sm tracking-wide mb-3">Recommended Fishing Spots</h3>
+          
+          <!-- Toggle Switch Row -->
+          <div class="mb-4">
+            <label class="toggle-switch flex justify-between items-center text-sm text-midnight-textSecondary cursor-pointer">
+              <span>{showRecommendedOnly ? 'Best Only' : 'All Spots'}</span>
+              <div class="relative inline-block w-11 h-5.5 ml-2">
+                <input 
+                  type="checkbox" 
+                  bind:checked={showRecommendedOnly} 
+                  on:click={toggleShowRecommended} 
+                  class="opacity-0 w-0 h-0 absolute"
+                >
+                <span class="slider round"></span>
+              </div>
+            </label>
+          </div>
+          
+          {#if userLocation}
+            <div class="mb-3">
+              <label for="radius-slider" class="block mb-1.5 text-xs text-midnight-textSecondary">
+                Radius: {searchRadius}mi
+              </label>
+              <input 
+                id="radius-slider"
+                type="range" 
+                min="5" 
+                max="50" 
+                step="5"
+                bind:value={searchRadius}
+                on:input={() => loadRecommendedSpots()}
+                class="w-full cursor-pointer h-1 bg-white/10 rounded"
+                aria-label="Search radius in miles"
+              >
+              <div class="flex justify-between text-xs text-midnight-textMuted mt-0.5">
+                <span>5mi</span>
+                <span>50mi</span>
+              </div>
+            </div>
+            
+            {#if recommendationError}
+              <div class="mt-2.5 p-2 bg-orange-500/20 text-orange-300 border border-orange-500/30 rounded text-sm">
+                {recommendationError}
+              </div>
+            {/if}
+            
+            {#if recommendedSpots.length > 0}
+              <div class="mt-2.5 border-t border-midnight-border pt-2">
+                <h4 class="text-xs text-midnight-textSecondary mb-1.5">Top Spots:</h4>
+                <div class="max-h-48 overflow-y-auto scrollbar-hide">
+                  {#each recommendedSpots.slice(0, 5) as spot, i}
+                    <button
+                      type="button"
+                      aria-label={`Navigate to ${spot.location.name || 'Fishing Spot'}, score ${Math.round(spot.score)}`}
+                      on:click|stopPropagation={() => {
+                        if (mapInstance) {
+                          // First, close any open popups
+                          mapMarkers.forEach(m => {
+                            const popup = m.getPopup();
+                            if (popup && popup.isOpen()) {
+                              m.togglePopup();
+                            }
+                          });
+                          
+                          // Then fly to the selected spot
+                          mapInstance.flyTo({
+                            center: [spot.location.longitude, spot.location.latitude],
+                            zoom: 12,
+                            essential: true
+                          });
+                          
+                          // Find and highlight the marker
+                          const marker = mapMarkers.find(m => {
+                            const lngLat = m.getLngLat();
+                            return lngLat.lng === spot.location.longitude && 
+                                   lngLat.lat === spot.location.latitude;
+                          });
+                          
+                          if (marker) {
+                            setTimeout(() => {
+                              marker.getElement().style.transform = 'scale(1.3)';
+                              marker.getElement().style.zIndex = '1000';
+                              marker.togglePopup();
+                            }, 300);
+                          }
+                        }
+                      }}
+                      on:keydown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          e.target?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                        }
+                      }}
+                      class="p-2 mb-1.5 bg-surface-dark/80 border border-white/5 rounded cursor-pointer transition-colors w-full text-left hover:bg-surface-dark"
+                      on:mouseenter={() => {
+                        const marker = mapMarkers.find(m => {
+                          const lngLat = m.getLngLat();
+                          return lngLat.lng === spot.location.longitude && 
+                                 lngLat.lat === spot.location.latitude;
+                        });
+                        if (marker) {
+                          marker.getElement().style.transform = 'scale(1.3)';
+                          marker.getElement().style.zIndex = '1000';
+                          marker.togglePopup();
+                        }
+                      }}
+                      on:mouseleave={() => {
+                        const marker = mapMarkers.find(m => {
+                          const lngLat = m.getLngLat();
+                          return lngLat.lng === spot.location.longitude && 
+                                 lngLat.lat === spot.location.latitude;
+                        });
+                        if (marker) {
+                          marker.getElement().style.transform = 'scale(1)';
+                          marker.getElement().style.zIndex = '1';
+                          if (marker.getPopup().isOpen()) {
+                            marker.togglePopup();
+                          }
+                        }
+                      }}
+                    >
+                      <div class="flex justify-between items-center">
+                        <span class="font-medium text-sm text-midnight-textPrimary">{i + 1}. {spot.location.name || 'Fishing Spot'}</span>
+                        <span class="font-bold text-cyan-300">{Math.round(spot.score)}</span>
+                      </div>
+                      <div class="text-xs text-midnight-textMuted mt-0.5">
+                        {spot.distance?.toFixed(1) || '0.0'} mi away
+                      </div>
+                    </button>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+          {:else}
+            <div class="text-midnight-textMuted text-sm text-center py-5">
+              {isLoadingRecommendations ? 'Detecting your location...' : 'Enable location access to find the best fishing spots near you.'}
+            </div>
+          {/if}
+        </div>
+      {/if}
     </div>
   </div>
 
   <!-- Right Side Controls -->
   <div class="fixed right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
-    <!-- Map Layers Button (Top) -->
-    <div class="bg-midnight-glass backdrop-blur-xl border border-midnight-border rounded-full p-3 shadow-xl hover:bg-midnight-surfaceLight transition-all duration-200 flex items-center justify-center relative">
-      <button 
-        class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors text-lg flex items-center justify-center"
-        on:click={handleMapLayersClick}
-        title="Map Layers"
-      >
-        🗂️
-      </button>
-      
-      <!-- Desktop Flyout -->
-      <MapLayersFlyout 
-        isOpen={showFlyout}
-        currentStyle={currentMapStyle}
-        onStyleSelect={handleStyleSelect}
-      />
-    </div>
-    
     <!-- Zoom Controls -->
     <div class="bg-midnight-glass backdrop-blur-xl border border-midnight-border rounded-full p-2 shadow-xl hover:bg-midnight-surfaceLight transition-all duration-200">
       <div class="flex flex-col gap-1">
@@ -352,27 +638,72 @@
         </button>
       </div>
     </div>
-    
-    <!-- Log Catch FAB (Bottom Right) -->
-    <div class="bg-midnight-primary rounded-full p-4 shadow-xl hover:bg-midnight-primary/80 transition-all duration-200 flex items-center justify-center">
-      <button 
-        class="text-[#1e1e2e] text-xl flex items-center justify-center"
-        on:click={onLogCatch}
-        title="Log Catch"
-      >
-        🎣
-      </button>
-    </div>
   </div>
 {/if}
 
-<!-- Mobile Map Layers Modal -->
-{#if isMobile}
-  <MapLayersModal 
-    isOpen={showModal}
-    currentStyle={currentMapStyle}
-    onStyleSelect={handleStyleSelect}
-    onClose={handleModalClose}
-  />
-{/if}
+
+<style>
+	.toggle-switch {
+		display: flex;
+		align-items: center;
+		min-height: 40px;
+	}
+
+	.toggle-switch input {
+		opacity: 0;
+		left: 0;
+	}
+
+	.slider {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: #45475a; /* midnight-surfaceLight */
+		transition: .4s;
+		border-radius: 24px;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+	}
+
+	.slider:before {
+		position: absolute;
+		content: "";
+		height: 16px;
+		width: 16px;
+		left: 4px;
+		bottom: 4px;
+		background-color: #cdd6f4;
+		transition: .4s;
+		border-radius: 50%;
+	}
+
+	input:checked + .slider {
+		background-color: #cba6f7;
+	}
+
+	input:focus + .slider {
+		box-shadow: 0 0 1px #cba6f7;
+	}
+
+	input:checked + .slider:before {
+		transform: translateX(26px);
+	}
+
+	/* Rounded sliders */
+	.slider.round {
+		border-radius: 24px;
+	}
+
+	.slider.round:before {
+		border-radius: 50%;
+	}
+
+	/* Improve touch targets */
+	.toggle-switch > div {
+		height: 24px;
+		display: flex;
+		align-items: center;
+	}
+</style>
 
