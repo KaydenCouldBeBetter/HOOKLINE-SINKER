@@ -56,7 +56,7 @@
         </button>
         
         {#if isOpen}
-          <div class="mt-2 space-y-1 max-h-48 overflow-y-auto scrollbar-hide">
+          <div class="mt-2 space-y-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
             {#each styleKeys as style (style)}
               {@const currentStyleKey = style as MapStyle}
               <button
@@ -91,7 +91,7 @@
       </button>
       
       {#if isOpen}
-        <div class="mt-2 space-y-1 max-h-48 overflow-y-auto scrollbar-hide">
+        <div class="mt-2 space-y-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
           {#each styleKeys as style (style)}
             {@const currentStyleKey = style as MapStyle}
             <button
