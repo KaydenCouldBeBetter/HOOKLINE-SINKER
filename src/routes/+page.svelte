@@ -203,12 +203,8 @@
 		weatherCondition={currentWeather?.forecast?.[0]?.summary?.condition?.toLowerCase()?.includes('rain') ? 'rainy' : 
 											currentWeather?.forecast?.[0]?.summary?.condition?.toLowerCase()?.includes('cloud') ? 'cloudy' : 'sunny'}
 		moonPhase={currentWeather?.forecast?.[0]?.moonPhase || '🌗'}
-		weatherError={weatherError}
-		isLoadingWeather={isLoadingWeather}
 		isUsingCachedWeather={isUsingCachedWeather}
 		onRefreshWeather={refreshWeather}
-		onResetBearing={handleResetBearing}
-		onGPSLocation={handleGPSLocation}
 		onLogCatch={handleLogCatch}
 		{isMobile}
 	/>

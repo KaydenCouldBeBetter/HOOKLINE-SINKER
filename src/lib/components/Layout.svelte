@@ -11,14 +11,10 @@
   export let selectedSpecies: string[] = [];
   export let onToggleSpecies: (species: string) => void = () => {};
   export let temperature: number = 24;
-  export let weatherCondition: 'sunny' | 'cloudy' | 'rainy' = 'cloudy';
+  export let weatherCondition: 'sunny' | 'cloudy' | 'rainy' = 'sunny';
   export let moonPhase: string = '🌗';
-  export let weatherError: string | null = null;
-  export let isLoadingWeather: boolean = false;
   export let isUsingCachedWeather: boolean = false;
   export let onRefreshWeather: () => void = () => {};
-  export let onResetBearing: () => void = () => {};
-  export let onGPSLocation: () => void = () => {};
   export let onLogCatch: () => void = () => {};
   export let isMobile: boolean = false;
 
