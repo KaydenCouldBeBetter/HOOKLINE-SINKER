@@ -1,21 +1,8 @@
-import { Router } from "express";
+import {Router} from "express";
 import {LocationWeatherResult, FishingConditions, LocationRecommendation, ScoreBreakdown} from "../../shared/types";
 import locations from "./locations";
-import { fetchWeatherForRadius } from "./weather";
+import {fetchWeatherForRadius} from "./weather";
 import {validateRadius} from "../utils";
-
-
-
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
-/**
- * Get today's forecast (first day in the 3-day forecast)
- */
-const getTodayForecast = (weather: FishingConditions) => {
-    return weather.forecast[0];
-};
 
 /**
  * Get average conditions for daytime hours (6am-6pm)
@@ -60,20 +47,16 @@ const hasGoodTideChanges = (tides: any[], sunrise: string, sunset: string): bool
     return tides.some(tide => {
         const tideHour = parseInt(tide.tide_time.split(':')[0]);
         return (tideHour >= primeStart1 && tideHour <= primeEnd1) ||
-               (tideHour >= primeStart2 && tideHour <= primeEnd2);
+            (tideHour >= primeStart2 && tideHour <= primeEnd2);
     });
 };
-
-// =============================================================================
-// SCORING FUNCTIONS (0-100 scale)
-// =============================================================================
 
 /**
  * Score weather comfort based on temperature, wind, and precipitation
  * Optimal conditions = high score
  */
 const scoreWeatherComfort = (weather: FishingConditions): number => {
-    const today = getTodayForecast(weather);
+    const today = weather.forecast[0];
     const daytimeAvg = getAverageDaytimeConditions(today.hourly);
 
     if (!daytimeAvg) return 50; // Neutral score if no data
@@ -85,13 +68,13 @@ const scoreWeatherComfort = (weather: FishingConditions): number => {
     if (temp >= 15 && temp <= 25) {
         score += 40; // Perfect temperature
     } else if (temp >= 10 && temp < 15) {
-        score += 30; // Cool but acceptable
+        score += 30;
     } else if (temp > 25 && temp <= 30) {
-        score += 30; // Warm but acceptable
+        score += 30;
     } else if (temp >= 5 && temp < 10) {
-        score += 15; // Cold
+        score += 15;
     } else if (temp > 30 && temp <= 35) {
-        score += 15; // Hot
+        score += 15;
     } else {
         score += 5; // Extreme temperatures
     }
@@ -101,9 +84,9 @@ const scoreWeatherComfort = (weather: FishingConditions): number => {
     if (wind <= 10) {
         score += 35; // Calm
     } else if (wind <= 20) {
-        score += 25; // Breezy
+        score += 25;
     } else if (wind <= 30) {
-        score += 10; // Windy
+        score += 10;
     } else {
         score += 0; // Very windy
     }
@@ -113,9 +96,9 @@ const scoreWeatherComfort = (weather: FishingConditions): number => {
     if (precip === 0) {
         score += 25; // No rain
     } else if (precip <= 2) {
-        score += 15; // Light drizzle
+        score += 15;
     } else if (precip <= 5) {
-        score += 5; // Moderate rain
+        score += 5;
     } else {
         score += 0; // Heavy rain
     }
@@ -127,7 +110,7 @@ const scoreWeatherComfort = (weather: FishingConditions): number => {
  * Score fish activity based on moon phase, tides, and water temperature
  */
 const scoreFishActivity = (weather: FishingConditions): number => {
-    const today = getTodayForecast(weather);
+    const today = weather.forecast[0];
     const daytimeAvg = getAverageDaytimeConditions(today.hourly);
 
     if (!daytimeAvg) return 50; // Neutral score if no data
@@ -160,13 +143,13 @@ const scoreFishActivity = (weather: FishingConditions): number => {
     if (waterTemp >= 15 && waterTemp <= 22) {
         score += 35; // Optimal
     } else if (waterTemp >= 10 && waterTemp < 15) {
-        score += 25; // Cool but active
+        score += 25;
     } else if (waterTemp > 22 && waterTemp <= 26) {
-        score += 25; // Warm but active
+        score += 25;
     } else if (waterTemp >= 5 && waterTemp < 10) {
-        score += 10; // Cold, less active
+        score += 10;
     } else if (waterTemp > 26 && waterTemp <= 30) {
-        score += 10; // Hot, less active
+        score += 10;
     } else {
         score += 5; // Extreme temps, very inactive
     }
@@ -179,7 +162,7 @@ const scoreFishActivity = (weather: FishingConditions): number => {
  * Calmer, clearer water = higher score
  */
 const scoreWaterConditions = (weather: FishingConditions): number => {
-    const today = getTodayForecast(weather);
+    const today = weather.forecast[0];
     const daytimeAvg = getAverageDaytimeConditions(today.hourly);
 
     if (!daytimeAvg) return 50; // Neutral score if no data
@@ -288,13 +271,12 @@ const router = Router();
 
 /**
  * GET /api/recommended?latitude=&longitude=&radius=
- *
  * Returns recommended fishing spots within a radius, sorted by overall fishing score
  * considering weather comfort, fish activity, and water conditions for today.
  */
 router.get("/", async (req, res) => {
     try {
-        const { latitude, longitude, radius } = req.query;
+        const {latitude, longitude, radius} = req.query;
 
         if (!latitude || !longitude || !radius) {
             return res.status(400).json({
@@ -332,18 +314,16 @@ router.get("/", async (req, res) => {
 
         recommendations.sort((a, b) => b.score - a.score);
 
-        return res.json({
+        return res.status(200).json({
             recommendations,
             failed: weatherResults.failed,
             totalLocations: recommendations.length + weatherResults.failed.length,
             successfulScores: recommendations.length,
             failedWeatherFetches: weatherResults.failed.length
         });
-
     } catch (error) {
-        console.error("Error generating recommendations:", error);
         return res.status(500).json({
-            error: "Internal server error while generating recommendations"
+            error: "Internal server error"
         });
     }
 });
