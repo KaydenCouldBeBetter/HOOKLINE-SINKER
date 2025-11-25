@@ -79,13 +79,6 @@
 				crossSourceCollisions: false
 			});
 
-			// Remove default Mapbox controls to use custom UI
-			mapInstance.removeControl('navigation');
-			mapInstance.removeControl('scale');
-
-			// Remove default navigation controls to prevent white +/- buttons
-			// mapInstance.addControl(new mapboxgl.NavigationControl(), NAVIGATION_CONTROL_POSITION);
-
 			// Add custom attribution control positioned away from UI
 			mapInstance.addControl(new mapboxgl.AttributionControl({
 				compact: true

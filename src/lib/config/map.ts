@@ -61,9 +61,20 @@ export const MAP_STYLE_MIDNIGHT_WATER = MAP_STYLES['midnight-water'].url;
 export const MAP_CENTER: LngLatLike = [-73.9857, 40.7484];
 export const MAP_ZOOM = 11;
 
-export const MAP_OPTIONS: Pick<MapboxOptions, 'center' | 'zoom'> = {
+export const MAP_OPTIONS: MapboxOptions = {
 	center: MAP_CENTER,
-	zoom: MAP_ZOOM
+	zoom: MAP_ZOOM,
+	// Disable default Mapbox controls to use custom UI
+	attributionControl: false,
+	navigationControl: false,
+	scaleControl: false,
+	// Custom interaction settings
+	dragPan: true,
+	dragRotate: true,
+	scrollZoom: true,
+	doubleClickZoom: true,
+	keyboard: true,
+	touchZoomRotate: true
 };
 
 export const NAVIGATION_CONTROL_POSITION: ControlPosition = 'top-right';
