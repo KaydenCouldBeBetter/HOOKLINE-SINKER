@@ -195,6 +195,27 @@
           </div>
           
           {#if userLocation}
+            <div class="mb-3">
+              <label for="mobile-radius-slider" class="block mb-1.5 text-xs text-midnight-textSecondary">
+                Radius: {searchRadius}mi
+              </label>
+              <input 
+                id="mobile-radius-slider"
+                type="range" 
+                min="5" 
+                max="50" 
+                step="5"
+                bind:value={searchRadius}
+                on:input={() => loadRecommendedSpots()}
+                class="w-full cursor-pointer h-1 bg-white/10 rounded"
+                aria-label="Search radius in miles"
+              >
+              <div class="flex justify-between text-xs text-midnight-textMuted mt-0.5">
+                <span>5mi</span>
+                <span>50mi</span>
+              </div>
+            </div>
+            
             {#if recommendationError}
               <div class="p-2 bg-orange-500/20 text-orange-300 border border-orange-500/30 rounded text-sm mb-2">
                 {recommendationError}
