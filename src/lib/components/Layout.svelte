@@ -194,9 +194,11 @@
     <!-- Map Theme -->
     <div class="mb-4 pb-3 border-b border-white/10">
       <h3 class="text-[#cdd6f4] font-semibold text-sm tracking-wide mb-3">Map Theme</h3>
-      <slot name="themeSelector">
-        <!-- Theme selector will be injected here -->
-      </slot>
+      {#if !isMobile}
+        <slot name="themeSelector">
+          <!-- Theme selector will be injected here -->
+        </slot>
+      {/if}
     </div>
     
     <!-- Quick Filters -->

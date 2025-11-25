@@ -173,13 +173,11 @@
 		{isMobile}
 	>
 		<svelte:fragment slot="themeSelector">
-			{#if !isMobile}
-				<MapStyleSelector 
-					bind:currentStyle={mapStyle} 
-					on:styleChange={handleMapStyleChange}
-					{isMobile}
-				/>
-			{/if}
+			<MapStyleSelector 
+				bind:currentStyle={mapStyle} 
+				on:styleChange={handleMapStyleChange}
+				{isMobile}
+			/>
 		</svelte:fragment>
 	</Layout>
 </div>
