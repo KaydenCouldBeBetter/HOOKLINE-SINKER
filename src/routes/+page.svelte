@@ -174,9 +174,11 @@
 	/>
 </div>
 
-<!-- Map Style Selector - Outside container to avoid stacking context -->
+<!-- Map Style Selector - Only on desktop -->
+{#if !isMobile}
 <MapStyleSelector 
 	bind:currentStyle={mapStyle} 
 	on:styleChange={handleMapStyleChange}
 	{isMobile}
 />
+{/if}

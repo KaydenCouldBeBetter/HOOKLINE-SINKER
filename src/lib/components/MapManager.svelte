@@ -66,21 +66,78 @@
 			return;
 		}
 
-		mapboxgl.accessToken = accessToken;
-		mapInstance = new mapboxgl.Map({
-			container: mapContainer!,
-			style: MAP_STYLES[mapStyle].url,
-			...MAP_OPTIONS
-		});
-		currentMapStyle = mapStyle;
-		pendingMapStyle = null;
+		try {
+			mapInstance = new mapboxgl.Map({
+				container: mapContainer!,
+				style: MAP_STYLES[mapStyle].url,
+				...MAP_OPTIONS
+			});
 
-		mapInstance.addControl(new mapboxgl.NavigationControl(), NAVIGATION_CONTROL_POSITION);
-		
-		// Notify parent when map is ready
-		onMapReady?.(mapInstance);
+			// Remove default navigation controls to prevent white +/- buttons
+			// mapInstance.addControl(new mapboxgl.NavigationControl(), NAVIGATION_CONTROL_POSITION);
+
+			// Add custom attribution control positioned away from UI
+			mapInstance.addControl(new mapboxgl.AttributionControl({
+				compact: true
+			}), 'bottom-left');
+
+			// Notify parent when map is ready
+			onMapReady?.(mapInstance);
+
+			// Apply chartplotter styling when style loads
+			mapInstance.on('style.load', () => {
+				if (!mapInstance) return;
+				
+				// Hide road layers for chartplotter effect
+				const layers = mapInstance.getStyle().layers;
+				layers?.forEach(layer => {
+					if (layer.id.includes('road') || layer.id.includes('highway') || layer.id.includes('street')) {
+						mapInstance?.setLayoutProperty(layer.id, 'visibility', 'none');
+					}
+				});
+
+				// Add neon blue bathymetry styling (if layer exists)
+				if (mapInstance.getLayer('water')) {
+					mapInstance.setPaintProperty('water', 'fill-color', '#00d4ff');
+					mapInstance.setPaintProperty('water', 'fill-outline-color', '#0099cc');
+				}
+			});
+
+			mapInstance.on('load', () => {
+				currentMapStyle = mapStyle;
+				onMapLoad?.();
+			});
+
+			mapInstance.on('error', (e) => {
+				console.error('Mapbox error:', e);
+				mapError = 'Map loading failed';
+				onMapError?.(mapError || 'Unknown map error');
+			});
+		} catch (error) {
+			console.error('Map initialization error:', error);
+			mapError = 'Failed to initialize map';
+			onMapError?.(mapError || 'Unknown map error');
+		}
+
+		// Add custom zoom control listeners
+		const handleZoomIn = () => {
+			if (mapInstance) {
+				mapInstance.zoomIn();
+			}
+		};
+
+		const handleZoomOut = () => {
+			if (mapInstance) {
+				mapInstance.zoomOut();
+			}
+		};
+
+		window.addEventListener('mapZoomIn', handleZoomIn);
+		window.addEventListener('mapZoomOut', handleZoomOut);
 
 		return () => {
+			window.removeEventListener('mapZoomIn', handleZoomIn);
+			window.removeEventListener('mapZoomOut', handleZoomOut);
 			mapInstance?.remove();
 			mapInstance = null;
 		};

@@ -104,7 +104,7 @@
   });
 </script>
 
-{#if isMobile}
+{:if isMobile}
   <!-- Mobile Layout -->
   <!-- Bottom: Filter Dock -->
   <div class="absolute bottom-4 left-4 right-4 pointer-events-auto z-20">
@@ -112,41 +112,25 @@
       <div class="flex items-center gap-3">
         <!-- Filter Chips -->
         <div class="flex-1 overflow-x-auto scrollbar-hide">
-          {#if loading}
-            <div class="text-[#a6adc8] text-sm py-2">
-              Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
-            </div>
-          {:else if error}
-            <div class="text-[#f38ba8] text-sm py-2">
-              ⚠️ Error: {error}
-              <button 
-                class="ml-2 text-xs underline hover:text-[#f2cdcd]" 
-                on:click={() => loadSpecies()}
-              >
-                Retry
-              </button>
-            </div>
-          {:else}
-            <div class="flex gap-2 pb-2">
-              {#each speciesOptions as species (species)}
-                <FilterChip 
-                  label={species}
-                  active={selectedSpecies.includes(species as string)}
-                  onClick={() => onToggleSpecies(species as string)}
-                />
-              {/each}
-            </div>
-          {/if}
+          {#each speciesOptions as species (species)}
+            <FilterChip 
+              label={species}
+              active={selectedSpecies.includes(species as string)}
+              onClick={() => onToggleSpecies(species as string)}
+            />
+          {/each}
         </div>
       </div>
     </UniversalPanel>
   </div>
 
-  <!-- Top Left: Weather Widget -->
-  <div class="absolute left-4 top-4 pointer-events-auto z-20">
-    <UniversalPanel padding="sm">
+  <!-- Top Right: Weather Widget -->
+  <div class="absolute right-4 top-4 pointer-events-auto z-20">
+    <UniversalPanel padding="sm" className="min-w-fit">
       {#if isLoadingWeather}
-        <div class="text-[#a6adc8] text-sm py-1">Loading weather...</div>
+        <div class="text-[#a6adc8] text-sm py-1">
+          Loading weather...
+        </div>
       {:else if weatherError}
         <div class="text-[#f38ba8] text-sm py-1">
           ⚠️ Weather unavailable
@@ -172,83 +156,123 @@
     </UniversalPanel>
   </div>
 
-  <!-- Top Right: Map Tools -->
-  <div class="absolute right-4 top-4 pointer-events-auto z-20 flex flex-col gap-2">
-    <ControlButton icon="🗺️" size="sm" onClick={onResetBearing} />
+  <!-- Right Edge: Control Stack -->
+  <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
+    <ControlButton icon="�" size="sm" onClick={onGPSLocation} />
     <ControlButton icon="🧭" size="sm" onClick={onResetBearing} />
-  </div>
-
-  <!-- Bottom Right: Action Stack -->
-  <div class="absolute right-4 bottom-24 pointer-events-auto z-20 flex flex-col gap-3">
-    <ControlButton icon="📍" size="sm" onClick={onGPSLocation} />
     <FloatingActionButton icon="🎣" onClick={onLogCatch} />
   </div>
 {:else}
-  <!-- Mobile: Bottom Sheet -->
-  <div class="absolute bottom-4 left-4 right-4 pointer-events-auto z-20">
-    <UniversalPanel padding="md" className="max-h-80 overflow-y-auto">
-      <!-- Weather Header -->
-      <div class="flex justify-between items-center mb-4">
-        <div>
-          <h2 class="text-[#cdd6f4] font-medium">Weather</h2>
-          {#if isUsingCachedWeather}
-            <div class="text-[#89b4fa] text-xs">Cached data</div>
-          {/if}
-        </div>
-        <div class="flex items-center gap-2">
-          <WeatherWidget 
-            temperature={temperature} 
-            condition={weatherCondition} 
-            moonPhase={moonPhase}
-          />
-          {#if isUsingCachedWeather}
-            <button 
-              class="text-[#89b4fa] text-xs hover:text-[#b4befe]" 
-              on:click={onRefreshWeather}
-              title="Refresh weather data"
-            >
-              🔄
-            </button>
-          {/if}
-        </div>
-      </div>
-      
-      <!-- Quick Filters -->
+  <!-- Desktop Layout: Floating Command Card (Top Left) -->
+  <div class="fixed top-6 left-6 w-[24rem] bg-[#1e1e2e]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl z-50 pointer-events-auto">
+    <!-- Weather Header -->
+    <div class="flex justify-between items-center mb-4">
       <div>
-        <h3 class="text-[#cdd6f4] font-medium mb-3">Quick Filters</h3>
-        {#if loading}
-          <div class="text-[#a6adc8] text-sm">
-            Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
-          </div>
-        {:else if error}
-          <div class="text-[#f38ba8] text-sm">
-            ⚠️ Error: {error}
-            <button 
-              class="ml-2 text-xs underline hover:text-[#f2cdcd]" 
-              on:click={() => loadSpecies()}
-            >
-              Retry
-            </button>
-          </div>
-        {:else}
-          <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-            {#each speciesOptions as species (species)}
-              <FilterChip 
-                label={species}
-                active={selectedSpecies.includes(species as string)}
-                onClick={() => onToggleSpecies(species as string)}
-              />
-            {/each}
-          </div>
+        <h2 class="text-[#cdd6f4] font-medium">Weather</h2>
+        {#if isUsingCachedWeather}
+          <div class="text-[#89b4fa] text-xs">Cached data</div>
         {/if}
       </div>
-    </UniversalPanel>
+      <div class="flex items-center gap-2">
+        <WeatherWidget 
+          temperature={temperature} 
+          condition={weatherCondition} 
+          moonPhase={moonPhase}
+        />
+        {#if isUsingCachedWeather}
+          <button 
+            class="text-[#89b4fa] text-xs hover:text-[#b4befe]" 
+            on:click={onRefreshWeather}
+            title="Refresh weather data"
+          >
+            🔄
+          </button>
+        {/if}
+      </div>
+    </div>
+    
+    <!-- Quick Filters -->
+    <div>
+      <h3 class="text-[#cdd6f4] font-medium mb-3">Quick Filters</h3>
+      {#if loading}
+        <div class="text-[#a6adc8] text-sm">
+          Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
+        </div>
+      {:else if error}
+        <div class="text-[#f38ba8] text-sm">
+          ⚠️ Error: {error}
+          <button 
+            class="ml-2 text-xs underline hover:text-[#f2cdcd]" 
+            on:click={() => loadSpecies()}
+          >
+            Retry
+          </button>
+        </div>
+      {:else}
+        <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+          {#each speciesOptions as species (species)}
+            <FilterChip 
+              label={species}
+              active={selectedSpecies.includes(species as string)}
+              onClick={() => onToggleSpecies(species as string)}
+            />
+          {/each}
+        </div>
+      {/if}
+    </div>
   </div>
 
-  <!-- Right Edge: Control Stack -->
-  <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
-    <ControlButton icon="📍" size="sm" onClick={onGPSLocation} />
-    <ControlButton icon="🧭" size="sm" onClick={onResetBearing} />
+  <!-- Right Side Controls -->
+  <div class="fixed right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
+    <!-- GPS Button (Sky Blue) -->
+    <div class="bg-[#1e1e2e]/80 backdrop-blur-sm border border-white/10 rounded-lg p-2">
+      <button 
+        class="text-[#89dceb] hover:text-[#b4f8f8] transition-colors"
+        on:click={onGPSLocation}
+        title="GPS Location"
+      >
+        📍
+      </button>
+    </div>
+    
+    <!-- Zoom Controls -->
+    <div class="bg-[#1e1e2e]/80 backdrop-blur-sm border border-white/10 rounded-lg flex flex-col gap-1 p-1">
+      <button 
+        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-sm px-1 py-1"
+        on:click={() => {
+          // Custom zoom in logic
+          const mapEvent = new CustomEvent('mapZoomIn');
+          window.dispatchEvent(mapEvent);
+        }}
+        title="Zoom In"
+      >
+        +
+      </button>
+      <button 
+        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-sm px-1 py-1"
+        on:click={() => {
+          // Custom zoom out logic
+          const mapEvent = new CustomEvent('mapZoomOut');
+          window.dispatchEvent(mapEvent);
+        }}
+        title="Zoom Out"
+      >
+        −
+      </button>
+    </div>
+    
+    <!-- Reset Bearing -->
+    <div class="bg-[#1e1e2e]/80 backdrop-blur-sm border border-white/10 rounded-lg p-2">
+      <button 
+        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors"
+        on:click={onResetBearing}
+        title="Reset Bearing"
+      >
+        🧭
+      </button>
+    </div>
+    
+    <!-- Log Catch (Mauve with Hook) -->
     <FloatingActionButton icon="🎣" onClick={onLogCatch} />
   </div>
 {/if}
