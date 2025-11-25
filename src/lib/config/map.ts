@@ -2,7 +2,7 @@ import type { LngLatLike, MapboxOptions } from 'mapbox-gl';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
-export type MapStyle = 'midnight-water' | 'glare-cut' | 'satellite' | 'ocean-depths' | 'terrain' | 'streets' | 'navigation-day' | 'navigation-night';
+export type MapStyle = 'midnight-water' | 'glare-cut' | 'satellite' | 'nautical' | 'terrain' | 'streets' | 'navigation-day' | 'navigation-night';
 
 export const MAP_STYLES: Record<MapStyle, { url: string; name: string; description: string; icon: string }> = {
 	'midnight-water': { 
@@ -23,11 +23,11 @@ export const MAP_STYLES: Record<MapStyle, { url: string; name: string; descripti
 		description: 'Satellite imagery',
 		icon: '🛰️'
 	},
-	'ocean-depths': {
+	'nautical': {
 		url: 'mapbox://styles/mapbox/navigation-day-v1',
-		name: 'Ocean Depths',
-		description: 'Detailed ocean floor topography',
-		icon: '🌏'
+		name: 'Nautical',
+		description: 'Navigation-focused map for maritime use',
+		icon: '⚓'
 	},
 	'terrain': {
 		url: 'mapbox://styles/mapbox/outdoors-v11',
