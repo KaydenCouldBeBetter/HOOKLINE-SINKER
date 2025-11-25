@@ -58,7 +58,8 @@
             <!-- Icon -->
             <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl mr-4 bg-[#1e1e2e]/50 text-[#a6adc8] group-hover:bg-[#cba6f7]/10 group-hover:text-[#cba6f7] transition-colors"
                  class:bg-[#cba6f7]/20={currentStyle === key}
-                 class:text-[#cba6f7]={currentStyle === key}>
+                 class:text-[#cba6f7]={currentStyle === key}
+            >
               {style.icon}
             </div>
             
