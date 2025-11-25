@@ -212,12 +212,12 @@
       </button>
       
       <!-- User Avatar -->
-      <div class="w-8 h-8 bg-[#89b4fa] rounded-full flex items-center justify-center text-[#1e1e2e] font-semibold text-sm hover:bg-[#b4f8f8] transition-colors cursor-pointer" title="User Profile" on:click={() => {
+      <button class="w-8 h-8 bg-[#89b4fa] rounded-full flex items-center justify-center text-[#1e1e2e] font-semibold text-sm hover:bg-[#b4f8f8] transition-colors cursor-pointer" title="User Profile" on:click={() => {
         const profileEvent = new CustomEvent('toggleProfile');
         window.dispatchEvent(profileEvent);
       }}>
         U
-      </div>
+      </button>
     </div>
     
     <!-- Content Area -->
