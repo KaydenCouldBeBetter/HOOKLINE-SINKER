@@ -172,14 +172,14 @@
 		onLogCatch={handleLogCatch}
 		{isMobile}
 	>
-		{#if !isMobile}
-			<svelte:fragment slot="themeSelector">
+		<svelte:fragment slot="themeSelector">
+			{#if !isMobile}
 				<MapStyleSelector 
 					bind:currentStyle={mapStyle} 
 					on:styleChange={handleMapStyleChange}
 					{isMobile}
 				/>
-			</svelte:fragment>
-		{/if}
+			{/if}
+		</svelte:fragment>
 	</Layout>
 </div>
