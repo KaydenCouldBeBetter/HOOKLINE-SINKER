@@ -406,27 +406,8 @@
 				`;
 			}
 
-			// Add description and category
+			// Add description and category for non-recommended markers
 			if (!marker.isRecommended) {
-					popupContent += `
-					<div style="margin-top: 8px; font-size: 12px; color: #a6adc8;">
-						<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-							<span>Weather:</span>
-							<span style="color: #cdd6f4;">${Math.round(marker.breakdown.weatherComfort)}/100</span>
-						</div>
-						<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-							<span>Fish Activity:</span>
-							<span style="color: #cdd6f4;">${Math.round(marker.breakdown.fishActivity)}/100</span>
-						</div>
-						<div style="display: flex; justify-between;">
-							<span>Water Conditions:</span>
-							<span style="color: #cdd6f4;">${Math.round(marker.breakdown.waterConditions)}/100</span>
-						</div>
-					</div>
-					`;
-				}
-			} else {
-				// Default popup for non-recommended markers
 				popupContent += `
 					${marker.description ? `<p style="font-size: 12px; margin: 0 0 4px 0; color: #a6adc8;">${marker.description}</p>` : ''}
 					<p style="font-size: 11px; color: #6c7086; margin: 0;">${marker.category ? `Category: ${marker.category}` : ''}</p>
@@ -436,7 +417,7 @@
 			popupContent += `</div>`;
 
 			const mapMarker = new mapboxgl.Marker(el)
-				.setLngLat([marker.lng, marker.lat])
+				.setLngLat([lng, lat])
 				.setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupContent))
 				.addTo(mapInstance);
 
