@@ -104,7 +104,7 @@
   <!-- Mobile Layout: Thumb-Driven HUD -->
   
   <!-- Top Left: Weather Widget (Passive Status Monitor) -->
-  <div class="fixed top-4 left-4 bg-[#1e1e2e]/90 backdrop-blur-xl border border-white/10 rounded-lg p-3 shadow-lg z-50 pointer-events-none">
+  <div class="fixed top-4 left-4 bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-lg p-3 shadow-xl z-50 pointer-events-none">
     <div class="flex items-center gap-2">
       <WeatherWidget 
         temperature={temperature} 
@@ -118,7 +118,7 @@
   <!-- Top Right: Map Tools (Rarely Used Actions) -->
   <div class="fixed top-4 right-4 flex gap-2 z-50 pointer-events-auto">
     <!-- Layers Button -->
-    <div class="bg-[#1e1e2e]/90 backdrop-blur-md border border-white/10 rounded-lg p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
+    <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-lg p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200">
       <button 
         class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors flex items-center justify-center"
         on:click={() => {
@@ -127,12 +127,12 @@
         }}
         title="Toggle Day/Night Mode"
       >
-        🗂️
+        📊
       </button>
     </div>
     
     <!-- Compass -->
-    <div class="bg-[#1e1e2e]/90 backdrop-blur-md border border-white/10 rounded-lg p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
+    <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-lg p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200">
       <button 
         class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors flex items-center justify-center"
         on:click={() => {
@@ -147,10 +147,10 @@
   </div>
   
   <!-- Bottom Edge: Filter Dock (Primary Navigation Controller) -->
-  <div class="fixed bottom-0 left-0 right-0 bg-[#1e1e2e]/90 backdrop-blur-xl border-t border-white/10 rounded-t-2xl shadow-2xl z-50 pointer-events-auto">
+  <div class="fixed bottom-0 left-0 right-0 bg-[#1e1e2e]/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl shadow-2xl z-50 pointer-events-auto">
     <div class="flex items-center justify-between p-4">
       <!-- Menu Icon (Left) -->
-      <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-lg p-3 h-11 flex items-center justify-center">
+      <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-lg p-3 h-11 flex items-center justify-center">
         <button class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors" title="Main Menu">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -160,7 +160,7 @@
       
       <!-- Horizontal Chip Carousel (Center/Right) -->
       <div class="flex-1 ml-4 overflow-x-auto scrollbar-hide">
-        <div class="flex gap-2">
+        <div class="flex gap-2 flex-nowrap">
           {#if loading}
             <div class="text-[#a6adc8] text-sm h-11 flex items-center">
               Loading species...
@@ -195,7 +195,7 @@
   </div>
 {:else}
   <!-- Desktop Layout: Floating Command Card (Top Left) -->
-  <div class="fixed top-6 left-6 w-[380px] bg-[#1e1e2e]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 pointer-events-auto">
+  <div class="fixed top-6 left-6 w-[380px] bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 pointer-events-auto">
     <!-- Header Row -->
     <div class="flex justify-between items-center p-4 border-b border-white/10">
       <!-- Hamburger Menu -->
@@ -283,7 +283,7 @@
   <!-- Right Side Controls -->
   <div class="fixed right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
     <!-- Compass Button (Top) -->
-    <div class="bg-[#1e1e2e]/90 backdrop-blur-md border border-white/10 rounded-full p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
+    <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-full p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
       <button 
         class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-lg flex items-center justify-center"
         on:click={() => {
@@ -297,7 +297,7 @@
     </div>
     
     <!-- Map Layers Button -->
-    <div class="bg-[#1e1e2e]/90 backdrop-blur-md border border-white/10 rounded-full p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
+    <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-full p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
       <button 
         class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-lg flex items-center justify-center"
         on:click={() => {
@@ -306,12 +306,12 @@
         }}
         title="Map Layers"
       >
-        🗂️
+        📊
       </button>
     </div>
     
     <!-- Zoom Controls -->
-    <div class="bg-[#1e1e2e]/90 backdrop-blur-md border border-white/10 rounded-full p-2 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
+    <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200">
       <div class="flex flex-col gap-1">
         <button 
           class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-sm px-2 py-1 hover:bg-white/10 rounded flex items-center justify-center"

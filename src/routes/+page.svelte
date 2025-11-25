@@ -9,7 +9,6 @@
 	// Map state
 	let mapContainer: HTMLDivElement | null = null;
 	let mapStyle: MapStyle = 'midnight-water';
-	let showLayersPanel = false;
 	let mapInstance: any = null;
 
 	// App state
@@ -104,24 +103,8 @@
 		mapInstance?.setBearing(0);
 	};
 
-	const handleToggleLayers = () => {
-		showLayersPanel = !showLayersPanel;
-	};
-
-	const handleZoomIn = () => {
-		mapInstance?.zoomIn();
-	};
-
-	const handleZoomOut = () => {
-		mapInstance?.zoomOut();
-	};
-
 	onMount(() => {
 		// Listen for custom events
-		const handleToggleLayers = () => {
-			showLayersPanel = !showLayersPanel;
-		};
-
 		const handleZoomIn = () => {
 			mapInstance?.zoomIn();
 		};
@@ -134,13 +117,11 @@
 			mapInstance?.setBearing(0);
 		};
 
-		window.addEventListener('toggleMapLayers', handleToggleLayers);
 		window.addEventListener('mapZoomIn', handleZoomIn);
 		window.addEventListener('mapZoomOut', handleZoomOut);
 		window.addEventListener('resetBearing', handleResetBearing);
 
 		return () => {
-			window.removeEventListener('toggleMapLayers', handleToggleLayers);
 			window.removeEventListener('mapZoomIn', handleZoomIn);
 			window.removeEventListener('mapZoomOut', handleZoomOut);
 			window.removeEventListener('resetBearing', handleResetBearing);
@@ -209,23 +190,3 @@
 		{isMobile}
 	/>
 </div>
-
-<!-- Floating Map Layers Panel (Hidden by default) -->
-{#if showLayersPanel}
-<div class="fixed top-1/2 right-24 -translate-y-1/2 bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/5 rounded-2xl p-4 shadow-2xl z-50 pointer-events-auto w-64">
-	<div class="flex justify-between items-center mb-3">
-		<h3 class="text-[#cdd6f4] font-semibold text-sm tracking-wide">Map Layers</h3>
-		<button 
-			class="text-[#a6adc8] hover:text-[#cdd6f4] transition-colors"
-			on:click={() => showLayersPanel = false}
-		>
-			✕
-		</button>
-	</div>
-	<MapStyleSelector 
-		bind:currentStyle={mapStyle} 
-		on:styleChange={handleMapStyleChange}
-		{isMobile}
-	/>
-</div>
-{/if}
