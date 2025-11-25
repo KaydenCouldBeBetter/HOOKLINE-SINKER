@@ -12,9 +12,10 @@
     'transition-all duration-200 ease-out',
     'cursor-pointer select-none',
     'transform hover:scale-105 active:scale-95',
+    'shadow-sm',
     active 
-      ? 'bg-purple-500 text-white border-purple-500 font-bold' 
-      : 'bg-transparent text-gray-400 border-gray-600 hover:border-gray-400'
+      ? 'bg-purple-500 text-white border-purple-500 font-bold shadow-purple-500/50' 
+      : 'bg-transparent text-gray-400 border-gray-600 hover:border-gray-400 hover:text-gray-300'
   ].join(' ');
 </script>
 
@@ -24,5 +25,10 @@
   tabindex="0"
   aria-label={`Toggle ${label} filter`}
 >
-  {label}
+  <span class="flex items-center gap-2">
+    {#if active}
+      <span class="text-xs">✓</span>
+    {/if}
+    <span>{label}</span>
+  </span>
 </button>
