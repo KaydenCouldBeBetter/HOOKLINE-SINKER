@@ -72,7 +72,11 @@
 				container: mapContainer!,
 				style: MAP_STYLES[mapStyle].url,
 				accessToken,
-				...MAP_OPTIONS
+				...MAP_OPTIONS,
+				// WebGL context preservation settings
+				preserveDrawingBuffer: true,
+				fadeDuration: 0,
+				crossSourceCollisions: false
 			});
 
 			// Remove default navigation controls to prevent white +/- buttons
@@ -111,6 +115,16 @@
 			mapInstance.on('error', (e) => {
 				// Only log non-critical errors, don't fail the map
 				console.warn('Mapbox warning:', e);
+			});
+
+			// Handle WebGL context loss
+			mapInstance.on('render', () => {
+				const gl = mapInstance.getCanvas().getContext('webgl') || mapInstance.getCanvas().getContext('experimental-webgl');
+				if (gl && gl.isContextLost()) {
+					console.warn('WebGL context lost, attempting to restore...');
+					// Mapbox GL JS should automatically handle context restoration
+					// but we can add custom handling if needed
+				}
 			});
 
 			// Notify when map is fully loaded
