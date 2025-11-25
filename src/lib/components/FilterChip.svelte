@@ -13,8 +13,8 @@
     'cursor-pointer select-none',
     'transform hover:scale-105 active:scale-95',
     active 
-      ? 'bg-midnight-primary text-midnight-glass border-midnight-primary font-bold' 
-      : 'bg-transparent text-midnight-textSecondary border-midnight-border hover:border-white/20'
+      ? 'bg-purple-500 text-white border-purple-500 font-bold' 
+      : 'bg-transparent text-gray-400 border-gray-600 hover:border-gray-400'
   ].join(' ');
 </script>
 

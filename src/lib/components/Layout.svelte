@@ -146,12 +146,33 @@
         </div>
       {:else if activeTab === 'map'}
         <!-- Map Tab: Map Style Controls -->
-        <MapStyleSelector 
-          currentStyle={currentMapStyle}
-          isMobile={true}
-          on:styleChange={handleMapStyleSelectorChange}
-        />  
-        <div class="text-center text-xs text-midnight-textMuted mt-4">
+        <div class="space-y-4">
+          <div class="text-center">
+            <h3 class="text-midnight-textPrimary font-semibold text-sm tracking-wide mb-4">Map Style</h3>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3">
+            {#each ['structure', 'satellite', 'terrain', 'night'] as style (style)}
+              <button
+                class="flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 ${
+                  currentMapStyle === style
+                    ? 'bg-purple-500 text-white border-purple-500'
+                    : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700 hover:text-gray-300'
+                }"
+                on:click={() => handleMapStyleChange(style as MapStyle)}
+                title={style === 'structure' ? 'Midnight Water' : style === 'satellite' ? 'Satellite' : style === 'terrain' ? 'Terrain' : 'Night'}
+              >
+                <span class="text-2xl mb-2">
+                  {style === 'structure' ? '🌊' : style === 'satellite' ? '🛰️' : style === 'terrain' ? '⛰️' : '🌙'}
+                </span>
+                <span class="text-xs font-medium">
+                  {style === 'structure' ? 'Midnight Water' : style === 'satellite' ? 'Satellite' : style === 'terrain' ? 'Terrain' : 'Night'}
+                </span>
+              </button>
+            {/each}
+          </div>
+        </div>
+        <div class="text-center text-xs text-gray-400 mt-4">
           Choose how you want to view the fishing map
         </div>
       {:else}
@@ -259,6 +280,10 @@
         activeTab={activeTab}
         onTabChange={handleTabChange}
         variant="desktop"
+        tabs={[
+          { key: 'plan', label: 'Plan' },
+          { key: 'spots', label: 'Spots' }
+        ]}
       />
       
       <!-- User Avatar -->
