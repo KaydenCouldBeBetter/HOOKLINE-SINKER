@@ -26,7 +26,7 @@
 	let mapError: string | null = null;
 	let styleLoadHandler: (() => void) | null = null;
 
-	const accessToken = env[MAPBOX_TOKEN_ENV] || 'pk.eyJ1IjoiYnJpZ2dzbG92ZXJ6IiwiYSI6ImNtaHYwa2ljdjA1bmIyam9oN3Jqendub2sifQ.4RPt5tQ8l41FqBY7dMJfog';
+	const accessToken = 'pk.eyJ1IjoiYnJpZ2dzbG92ZXJ6IiwiYSI6ImNtaHYwa2ljdjA1bmIyam9oN3Jqendub2sifQ.4RPt5tQ8l41FqBY7dMJfog';
 
 	const syncMapStyle = () => {
 		const targetStyle = mapStyle;
