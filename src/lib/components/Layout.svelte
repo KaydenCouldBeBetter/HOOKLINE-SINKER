@@ -277,7 +277,7 @@
       
       <!-- Desktop Flyout -->
       <MapLayersFlyout 
-        {isOpen: showFlyout}
+        isOpen={showFlyout}
         currentStyle={currentMapStyle}
         onStyleSelect={handleStyleSelect}
         buttonRef={layersButtonRef}
@@ -327,7 +327,7 @@
 <!-- Mobile Map Layers Modal -->
 {#if isMobile}
   <MapLayersModal 
-    {isOpen: showModal}
+    isOpen={showModal}
     currentStyle={currentMapStyle}
     onStyleSelect={handleStyleSelect}
   />

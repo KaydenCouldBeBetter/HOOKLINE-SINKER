@@ -195,6 +195,6 @@
 		onLogCatch={handleLogCatch}
 		{isMobile}
 		currentMapStyle={mapStyle}
-		onMapStyleChange={(style) => mapStyle = style}
+		onMapStyleChange={(style: MapStyle) => mapStyle = style}
 	/>
 </div>
