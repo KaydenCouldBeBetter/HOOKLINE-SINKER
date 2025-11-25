@@ -2,7 +2,7 @@ import type { LngLatLike, MapboxOptions } from 'mapbox-gl';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
-export type MapStyle = 'structure' | 'marine' | 'satellite';
+export type MapStyle = 'structure' | 'marine' | 'satellite' | 'outdoors' | 'street' | 'terrain' | 'navigation' | 'night';
 
 export type MapStyleInfo = {
   url: string;
@@ -29,6 +29,36 @@ export const MAP_STYLES: Record<MapStyle, MapStyleInfo> = {
     name: 'Satellite', 
     description: 'Visual landmark navigation',
     icon: '🛰️'
+  },
+  'outdoors': { 
+    url: 'mapbox://styles/mapbox/outdoors-v12', 
+    name: 'Outdoors', 
+    description: 'Hiking and outdoor activity visualization',
+    icon: '🥾'
+  },
+  'street': { 
+    url: 'mapbox://styles/mapbox/streets-v12', 
+    name: 'Street', 
+    description: 'Detailed street and road navigation',
+    icon: '🛣️'
+  },
+  'terrain': { 
+    url: 'mapbox://styles/mapbox/satellite-streets-v12', 
+    name: 'Terrain', 
+    description: 'Satellite imagery with street overlays',
+    icon: '🏔️'
+  },
+  'navigation': { 
+    url: 'mapbox://styles/mapbox/navigation-day-v1', 
+    name: 'Navigation', 
+    description: 'Optimized for route finding and navigation',
+    icon: '🧭'
+  },
+  'night': { 
+    url: 'mapbox://styles/mapbox/navigation-night-v1', 
+    name: 'Night', 
+    description: 'Dark navigation theme for nighttime use',
+    icon: '🌙'
   }
 };
 
@@ -36,6 +66,11 @@ export const MAP_CENTER: LngLatLike = [-73.9857, 40.7484];
 export const MAP_STYLE_STRUCTURE = MAP_STYLES['structure'].url;
 export const MAP_STYLE_MARINE = MAP_STYLES['marine'].url;
 export const MAP_STYLE_SATELLITE = MAP_STYLES['satellite'].url;
+export const MAP_STYLE_OUTDOORS = MAP_STYLES['outdoors'].url;
+export const MAP_STYLE_STREET = MAP_STYLES['street'].url;
+export const MAP_STYLE_TERRAIN = MAP_STYLES['terrain'].url;
+export const MAP_STYLE_NAVIGATION = MAP_STYLES['navigation'].url;
+export const MAP_STYLE_NIGHT = MAP_STYLES['night'].url;
 export const MAP_ZOOM = 11;
 
 export const MAP_OPTIONS = {
