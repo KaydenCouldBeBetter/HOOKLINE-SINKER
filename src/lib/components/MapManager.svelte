@@ -71,6 +71,7 @@
 			mapInstance = new mapboxgl.Map({
 				container: mapContainer!,
 				style: MAP_STYLES[mapStyle].url,
+				accessToken,
 				...MAP_OPTIONS
 			});
 
