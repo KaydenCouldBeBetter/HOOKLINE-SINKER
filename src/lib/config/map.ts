@@ -1,42 +1,27 @@
 import type { ControlPosition, LngLatLike, MapboxOptions } from 'mapbox-gl';
 
-export type MapStyle = 'streets' | 'dark' | 'light' | 'outdoors' | 'satellite' | 'satellite-streets';
+export type MapStyle = 'midnight-water' | 'glare-cut' | 'satellite';
 
 export const MAP_STYLES: Record<MapStyle, { url: string; name: string; description: string }> = {
-	streets: { 
-		url: 'mapbox://styles/mapbox/streets-v12', 
-		name: 'Streets', 
-		description: 'Default street map' 
-	},
-	dark: { 
+	'midnight-water': { 
 		url: 'mapbox://styles/mapbox/dark-v11', 
-		name: 'Dark', 
-		description: 'Dark theme streets' 
+		name: 'Midnight Water', 
+		description: 'Tron-style cyberpunk sonar with neon bathymetry' 
 	},
-	light: { 
+	'glare-cut': { 
 		url: 'mapbox://styles/mapbox/light-v11', 
-		name: 'Light', 
-		description: 'Light theme streets' 
-	},
-	outdoors: { 
-		url: 'mapbox://styles/mapbox/outdoors-v12', 
-		name: 'Outdoors', 
-		description: 'Terrain and hiking' 
+		name: 'Glare Cut', 
+		description: 'High contrast marine chart for daytime use' 
 	},
 	satellite: { 
 		url: 'mapbox://styles/mapbox/satellite-v9', 
 		name: 'Satellite', 
 		description: 'Satellite imagery' 
-	},
-	'satellite-streets': { 
-		url: 'mapbox://styles/mapbox/satellite-streets-v12', 
-		name: 'Satellite Streets', 
-		description: 'Satellite with streets' 
 	}
 };
 
-export const MAP_STYLE_LIGHT = MAP_STYLES.light.url;
-export const MAP_STYLE_DARK = MAP_STYLES.dark.url;
+export const MAP_STYLE_GLARE_CUT = MAP_STYLES['glare-cut'].url;
+export const MAP_STYLE_MIDNIGHT_WATER = MAP_STYLES['midnight-water'].url;
 
 export const MAP_CENTER: LngLatLike = [-73.9857, 40.7484];
 export const MAP_ZOOM = 11;

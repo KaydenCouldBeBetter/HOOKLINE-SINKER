@@ -14,7 +14,31 @@ export default {
 				'1050': '1050'
 			},
 			colors: {
-				// Catppuccin Mocha colors
+				// Midnight Standard - Universal Dark Glass Palette (Catppuccin Mocha)
+				midnight: {
+					// The "Midnight Glass" Surface
+					glass: '#1e1e2e', // Catppuccin Base
+					glassOpacity: 'rgba(30, 30, 46, 0.9)', // Base + 90% Opacity
+					
+					// Typography (High Contrast)
+					textPrimary: '#cdd6f4', // Text Base - Off White
+					textSecondary: '#a6adc8', // Subtext - Soft Grey
+					
+					// Functional Colors (Permanent)
+					primary: '#cba6f7', // Mauve - Main Buttons, Active Tabs
+					selection: '#f5c2e7', // Pink - Selected Chips, Toggles
+					water: '#89dceb', // Sky - GPS Dot, Water Depth
+					warning: '#fab387', // Peach - Low Battery, Weather Alert
+					
+					// Surface Colors
+					surfaceDark: '#313244', // Surface0 - Search bars, inputs
+					surfaceLight: '#45475a', // Surface1 - Hover states
+					
+					// Border & Subtle Elements
+					border: 'rgba(255, 255, 255, 0.1)', // Subtle 1px rim
+					shadow: 'rgba(0, 0, 0, 0.5)', // Deep shadow for lift
+				},
+				// Legacy Catppuccin for reference (deprecated in v3.0)
 				ctp: {
 					// Base colors
 					rosewater: '#f5e0dc',
@@ -46,14 +70,7 @@ export default {
 					base: '#1e1e2e',
 					mantle: '#181825',
 					crust: '#11111b'
-				},
-				// Custom accent colors from design guide
-				mauve: '#DDB6F2',
-				peach: '#F5C2E7',
-				latte: '#F4DBD6',
-				green: '#ABE9B3',
-				sky: '#89DCEB',
-				sapphire: '#74C7EC'
+				}
 			}
 		}
 	},

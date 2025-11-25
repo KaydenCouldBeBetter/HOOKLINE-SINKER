@@ -7,4 +7,7 @@ export type LocationDetails = {
 	conditions?: Array<{ label: string; value: string }>;
 	galleryImage?: string;
 	galleryLabel?: string;
+	depth?: string;
+	catches?: number;
+	forecast?: string;
 };
