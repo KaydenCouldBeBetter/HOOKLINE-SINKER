@@ -53,6 +53,35 @@
 		selectedSpecies = selectedSpecies.includes(species)
 			? selectedSpecies.filter((item) => item !== species)
 			: [...selectedSpecies, species];
+		
+		// Apply species filtering to markers
+		filterMarkersBySpecies();
+	};
+
+	// Filter markers based on selected species
+	const filterMarkersBySpecies = () => {
+		if (!allMarkers.length) return;
+		
+		// If no species selected, show all markers
+		if (selectedSpecies.length === 0) {
+			markers = showRecommendedOnly ? [...recommendedMarkers] : [...allMarkers, ...recommendedMarkers];
+		} else {
+			// Filter markers by selected species
+			const filteredMarkers = allMarkers.filter((marker: any) => {
+				if (!marker.metadata?.fish_species) return false;
+				
+				const fishSpecies = marker.metadata.fish_species as string;
+				// Check if any selected species is found in the marker's fish species string
+				return selectedSpecies.some(species => 
+					fishSpecies.toLowerCase().includes(species.toLowerCase())
+				);
+			});
+			
+			// Combine filtered markers with recommended markers
+			markers = showRecommendedOnly ? [...recommendedMarkers] : [...filteredMarkers, ...recommendedMarkers];
+		}
+		
+		renderMarkers();
 	};
 
 	const handleMapReady = async (map: any) => {
@@ -244,16 +273,11 @@
 			recommendedMarkers = recommendedSpots.map(spot => ({
 				...spot.location,
 				score: spot.score,
-				breakdown: spot.breakdown,
-				title: spot.location.name,
-				lat: spot.location.latitude,
-				lng: spot.location.longitude,
 				isRecommended: true
 			}));
 			
-			// Update markers based on current view mode
-			markers = showRecommendedOnly ? [...recommendedMarkers] : [...allMarkers, ...recommendedMarkers];
-			renderMarkers();
+			// Apply species filtering after loading recommendations
+			filterMarkersBySpecies();
 		} catch (error) {
 			console.error('Failed to load recommendations:', error);
 			recommendationError = error instanceof Error ? error.message : 'Failed to load recommendations';
@@ -271,8 +295,8 @@
 				throw new Error(`Markers API returned ${response.status}`);
 			}
 			allMarkers = await response.json();
-			markers = showRecommendedOnly ? [...recommendedMarkers] : [...allMarkers, ...recommendedMarkers];
-			renderMarkers();
+			// Apply species filtering after loading markers
+			filterMarkersBySpecies();
 		} catch (error) {
 			console.error('Failed to load markers:', error);
 		}
@@ -376,19 +400,8 @@
 	const toggleShowRecommended = () => {
 		showRecommendedOnly = !showRecommendedOnly;
 		
-		// Use a timeout to ensure the UI updates before we re-render markers
-		setTimeout(() => {
-			// Create a new array to trigger reactivity
-			markers = showRecommendedOnly 
-				? [...recommendedMarkers] 
-				: [...allMarkers, ...recommendedMarkers];
-			
-			// Force Svelte to recognize the array update
-			markers = [...markers];
-			
-			// Re-render the markers on the map
-			renderMarkers();
-		}, 0);
+		// Apply species filtering after toggling recommended view
+		filterMarkersBySpecies();
 	};
 </script>
 
