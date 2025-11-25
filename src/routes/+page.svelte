@@ -113,10 +113,6 @@
 			mapInstance?.zoomOut();
 		};
 
-		const handleResetBearing = () => {
-			mapInstance?.setBearing(0);
-		};
-
 		const handleToggleLayers = () => {
 			// Cycle through map styles when layers button is clicked
 			const styles: MapStyle[] = ['midnight-water', 'glare-cut', 'satellite', 'nautical'];
@@ -135,7 +131,6 @@
 
 		window.addEventListener('mapZoomIn', handleZoomIn);
 		window.addEventListener('mapZoomOut', handleZoomOut);
-		window.addEventListener('resetBearing', handleResetBearing);
 		window.addEventListener('toggleMapLayers', handleToggleLayers);
 		window.addEventListener('toggleMenu', handleToggleMenu);
 		window.addEventListener('toggleProfile', handleToggleProfile);
@@ -143,7 +138,6 @@
 		return () => {
 			window.removeEventListener('mapZoomIn', handleZoomIn);
 			window.removeEventListener('mapZoomOut', handleZoomOut);
-			window.removeEventListener('resetBearing', handleResetBearing);
 			window.removeEventListener('toggleMapLayers', handleToggleLayers);
 			window.removeEventListener('toggleMenu', handleToggleMenu);
 			window.removeEventListener('toggleProfile', handleToggleProfile);

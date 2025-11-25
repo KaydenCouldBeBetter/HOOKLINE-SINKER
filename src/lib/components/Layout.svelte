@@ -130,20 +130,6 @@
         📊
       </button>
     </div>
-    
-    <!-- Compass -->
-    <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-lg p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200">
-      <button 
-        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors flex items-center justify-center"
-        on:click={() => {
-          const mapEvent = new CustomEvent('resetBearing');
-          window.dispatchEvent(mapEvent);
-        }}
-        title="Reset Bearing"
-      >
-        🧭
-      </button>
-    </div>
   </div>
   
   <!-- Bottom Edge: Filter Dock (Primary Navigation Controller) -->
@@ -291,21 +277,7 @@
 
   <!-- Right Side Controls -->
   <div class="fixed right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
-    <!-- Compass Button (Top) -->
-    <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-full p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
-      <button 
-        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-lg flex items-center justify-center"
-        on:click={() => {
-          const mapEvent = new CustomEvent('resetBearing');
-          window.dispatchEvent(mapEvent);
-        }}
-        title="Reset Bearing to North"
-      >
-        🧭
-      </button>
-    </div>
-    
-    <!-- Map Layers Button -->
+    <!-- Map Layers Button (Top) -->
     <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-full p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
       <button 
         class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-lg flex items-center justify-center"
