@@ -14,7 +14,7 @@
 		type MapStyle
 	} from '$lib/config/map';
 
-	export let mapStyle: MapStyle = 'streets';
+	export let mapStyle: MapStyle = 'structure';
 	export let mapContainer: HTMLDivElement | null = null;
 	export let onMapReady: ((map: mapboxgl.Map) => void) | null = null;
 	export let onMapError: ((error: string) => void) | null = null;
