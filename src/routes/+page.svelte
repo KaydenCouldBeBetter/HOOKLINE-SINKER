@@ -172,11 +172,11 @@
 		onLogCatch={handleLogCatch}
 		{isMobile}
 	/>
-
-	<!-- Map Style Selector -->
-	<MapStyleSelector 
-		bind:currentStyle={mapStyle} 
-		on:styleChange={handleMapStyleChange}
-		{isMobile}
-	/>
 </div>
+
+<!-- Map Style Selector - Outside container to avoid stacking context -->
+<MapStyleSelector 
+	bind:currentStyle={mapStyle} 
+	on:styleChange={handleMapStyleChange}
+	{isMobile}
+/>
