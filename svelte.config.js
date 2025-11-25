@@ -17,9 +17,9 @@ const config = {
 		})
 	},
 
-	// Enhanced IDE support
+	// Disabled Svelte inspector due to Svelte 5 compatibility issues
 	vitePlugin: {
-		inspector: true
+		inspector: false
 	}
 };
 
