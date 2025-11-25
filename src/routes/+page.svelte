@@ -123,25 +123,10 @@
 		}
 	};
 
-	const handleMapStyleChange = (newStyle: MapStyle) => {
-		console.log('Map style change received:', newStyle);
-		console.log('Current style before change:', mapStyle);
-		if (!newStyle) {
-			console.log('No style provided, skipping');
-			return;
-		}
-		if (mapStyle === newStyle) {
-			console.log('Style is already set, skipping');
-			return;
-		}
+	const handleMapStyleChange = (event: CustomEvent<MapStyle>) => {
+		const newStyle = event.detail;
+		if (!newStyle || mapStyle === newStyle) return;
 		mapStyle = newStyle;
-		console.log('Map style set to:', mapStyle);
-	};
-
-	// Test function to verify event system
-	const testStyleChange = () => {
-		console.log('Test: Changing to satellite style');
-		mapStyle = 'satellite';
 	};
 
 	const handleLogCatch = () => {
@@ -187,16 +172,6 @@
 		onLogCatch={handleLogCatch}
 		{isMobile}
 	/>
-
-	<!-- Test Button (temporary) -->
-	<div class="absolute top-4 left-4 z-30">
-		<button 
-			class="bg-[#cba6f7] text-[#1e1e2e] px-3 py-1 rounded text-sm"
-			on:click={testStyleChange}
-		>
-			Test: Satellite
-		</button>
-	</div>
 
 	<!-- Map Style Selector -->
 	<MapStyleSelector 

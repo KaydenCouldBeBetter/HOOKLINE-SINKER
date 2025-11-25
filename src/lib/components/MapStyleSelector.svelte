@@ -18,19 +18,10 @@
   let isOpen = false;
 
   const selectStyle = (style: MapStyle) => {
-    console.log('Style selected in MapStyleSelector:', style);
-    if (!style) {
-      console.log('No style provided, skipping');
-      return;
-    }
-    if (currentStyle === style) {
-      console.log('Style is already active, skipping');
-      return;
-    }
+    if (!style || currentStyle === style) return;
     currentStyle = style;
     isOpen = false;
     dispatch('styleChange', style);
-    console.log('Event dispatched for style:', style);
   };
 
   const toggleOpen = () => {
