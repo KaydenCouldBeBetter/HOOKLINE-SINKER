@@ -113,14 +113,6 @@
 			mapInstance?.zoomOut();
 		};
 
-		const handleToggleLayers = () => {
-			// Cycle through map styles: Structure → Marine → Satellite
-			const styles: MapStyle[] = ['structure', 'marine', 'satellite'];
-			const currentIndex = styles.indexOf(mapStyle);
-			const nextIndex = (currentIndex + 1) % styles.length;
-			mapStyle = styles[nextIndex];
-		};
-
 		const handleToggleMenu = () => {
 			console.log('Menu toggled - placeholder for main menu functionality');
 		};
@@ -131,14 +123,12 @@
 
 		window.addEventListener('mapZoomIn', handleZoomIn);
 		window.addEventListener('mapZoomOut', handleZoomOut);
-		window.addEventListener('toggleMapLayers', handleToggleLayers);
 		window.addEventListener('toggleMenu', handleToggleMenu);
 		window.addEventListener('toggleProfile', handleToggleProfile);
 
 		return () => {
 			window.removeEventListener('mapZoomIn', handleZoomIn);
 			window.removeEventListener('mapZoomOut', handleZoomOut);
-			window.removeEventListener('toggleMapLayers', handleToggleLayers);
 			window.removeEventListener('toggleMenu', handleToggleMenu);
 			window.removeEventListener('toggleProfile', handleToggleProfile);
 		};
@@ -204,5 +194,7 @@
 		onRefreshWeather={refreshWeather}
 		onLogCatch={handleLogCatch}
 		{isMobile}
+		currentMapStyle={mapStyle}
+		onMapStyleChange={(style) => mapStyle = style}
 	/>
 </div>

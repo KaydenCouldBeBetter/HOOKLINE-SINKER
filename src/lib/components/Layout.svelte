@@ -1,13 +1,16 @@
-<!-- Responsive Layout - Midnight Standard v3.1 -->
+<!-- Responsive Layout - Midnight Standard v3.6 -->
 <script lang="ts">
   import FilterChip from './FilterChip.svelte';
   import ControlButton from './ControlButton.svelte';
   import FloatingActionButton from './FloatingActionButton.svelte';
   import WeatherWidget from './WeatherWidget.svelte';
   import UniversalPanel from './UniversalPanel.svelte';
+  import MapLayersFlyout from './MapLayersFlyout.svelte';
+  import MapLayersModal from './MapLayersModal.svelte';
   import { onMount } from 'svelte';
   import { cache, CACHE_KEYS, CACHE_TTL } from '$lib/utils/cache';
-  
+  import type { MapStyle } from '$lib/config/map';
+
   export let selectedSpecies: string[] = [];
   export let onToggleSpecies: (species: string) => void = () => {};
   export let temperature: number = 24;
@@ -17,8 +20,10 @@
   export let onRefreshWeather: () => void = () => {};
   export let onLogCatch: () => void = () => {};
   export let isMobile: boolean = false;
+  export let currentMapStyle: MapStyle = 'structure';
+  export let onMapStyleChange: (style: MapStyle) => void = () => {};
 
-  // Internal state
+  // Local state
   let speciesOptions: string[] = [];
   let loading: boolean = false;
   let error: string | null = null;
@@ -26,72 +31,58 @@
   const maxRetries: number = 3;
   let isUsingCachedSpecies: boolean = false;
 
-  // Type assertion helper
-  const assertIsString = (value: unknown): value is string => {
-    return typeof value === 'string';
+  // Map layers UI state
+  let showFlyout: boolean = false;
+  let showModal: boolean = false;
+  let layersButtonRef: HTMLDivElement | null = null;
+
+  const handleMapLayersClick = () => {
+    if (isMobile) {
+      showModal = true;
+    } else {
+      showFlyout = !showFlyout;
+    }
   };
 
-  interface SpeciesData {
-  species_name: string;
-  [key: string]: any;
-}
+  const handleStyleSelect = (style: MapStyle) => {
+    onMapStyleChange(style);
+  };
 
-// Load species data with caching and retry logic
-  const loadSpecies = async (attempt: number = 0) => {
+  // Load species data
+  const loadSpecies = async () => {
     loading = true;
     error = null;
-    isUsingCachedSpecies = false;
-
-    // Try to get from cache first
-    const cachedSpecies = cache.get<string[]>(CACHE_KEYS.SPECIES);
-    if (cachedSpecies) {
-      console.log('Using cached species:', cachedSpecies);
-      speciesOptions = cachedSpecies;
-      isUsingCachedSpecies = true;
-      loading = false;
-      return;
-    }
 
     try {
       const response = await fetch('/api/species');
       if (!response.ok) {
-        throw new Error(`Species API returned ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const data: unknown = await response.json();
+      const data = await response.json();
       console.log('Raw species data:', data);
-      if (!Array.isArray(data)) {
+      
+      if (data && Array.isArray(data) && data.length > 0) {
+        speciesOptions = data
+          .filter((item: any) => item && typeof item === 'object' && 'name' in item)
+          .map((item: any) => item.name)
+          .filter((name: string) => name && typeof name === 'string')
+          .sort((a: string, b: string) => a.localeCompare(b));
+        console.log('Processed species options:', speciesOptions);
+      } else {
         throw new Error('Invalid species data format');
       }
-      speciesOptions = data
-        .map((s: unknown) => {
-          const species = s as SpeciesData;
-          return species.species_name;
-        })
-        .filter(assertIsString);
-      
-      console.log('Processed species options:', speciesOptions);
-      
-      // Cache the species data
-      cache.set(CACHE_KEYS.SPECIES, speciesOptions, CACHE_TTL.SPECIES);
-      retryCount = 0; // Reset retry count on success
     } catch (err) {
-      console.error(`Failed to load species (attempt ${attempt + 1}):`, err);
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Failed to load species:', err);
+      error = err instanceof Error ? err.message : 'Failed to load species';
       
-      if (attempt < maxRetries - 1) {
-        retryCount = attempt + 1;
-        // Exponential backoff: wait 1s, 2s, 4s
-        const delay = Math.pow(2, attempt) * 1000;
-        setTimeout(() => loadSpecies(attempt + 1), delay);
-        return; // Don't set error state yet, we're retrying
+      // Retry logic
+      if (retryCount < maxRetries) {
+        retryCount++;
+        console.log(`Retrying species load (${retryCount}/${maxRetries})...`);
+        setTimeout(loadSpecies, 1000 * retryCount);
       }
-      
-      error = errorMessage;
-      speciesOptions = ['Bass', 'Walleye', 'Pike', 'Trout']; // Fallback data
     } finally {
-      if (attempt >= maxRetries - 1) {
-        loading = false;
-      }
+      loading = false;
     }
   };
 
@@ -121,10 +112,7 @@
     <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-lg p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200">
       <button 
         class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors flex items-center justify-center"
-        on:click={() => {
-          const mapEvent = new CustomEvent('toggleMapLayers');
-          window.dispatchEvent(mapEvent);
-        }}
+        on:click={handleMapLayersClick}
         title="Map Layers"
       >
         ⚙️
@@ -278,17 +266,22 @@
   <!-- Right Side Controls -->
   <div class="fixed right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
     <!-- Map Layers Button (Top) -->
-    <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-full p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
+    <div bind:this={layersButtonRef} class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-full p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center relative">
       <button 
         class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-lg flex items-center justify-center"
-        on:click={() => {
-          const mapEvent = new CustomEvent('toggleMapLayers');
-          window.dispatchEvent(mapEvent);
-        }}
+        on:click={handleMapLayersClick}
         title="Map Layers"
       >
         ⚙️
       </button>
+      
+      <!-- Desktop Flyout -->
+      <MapLayersFlyout 
+        {isOpen: showFlyout}
+        currentStyle={currentMapStyle}
+        onStyleSelect={handleStyleSelect}
+        buttonRef={layersButtonRef}
+      />
     </div>
     
     <!-- Zoom Controls -->
@@ -329,4 +322,13 @@
       </button>
     </div>
   </div>
+{/if}
+
+<!-- Mobile Map Layers Modal -->
+{#if isMobile}
+  <MapLayersModal 
+    {isOpen: showModal}
+    currentStyle={currentMapStyle}
+    onStyleSelect={handleStyleSelect}
+  />
 {/if}
