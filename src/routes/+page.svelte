@@ -130,24 +130,18 @@
 			mapInstance?.zoomOut();
 		};
 
-		const handleToggleMenu = () => {
-			console.log('Menu toggled - placeholder for main menu functionality');
-		};
-
 		const handleToggleProfile = () => {
 			console.log('Profile toggled - placeholder for user profile functionality');
 		};
 
 		window.addEventListener('mapZoomIn', handleZoomIn);
 		window.addEventListener('mapZoomOut', handleZoomOut);
-		window.addEventListener('toggleMenu', handleToggleMenu);
 		window.addEventListener('toggleProfile', handleToggleProfile);
 		window.addEventListener('mapStyleChange', handleMapStyleChange);
 
 		return () => {
 			window.removeEventListener('mapZoomIn', handleZoomIn);
 			window.removeEventListener('mapZoomOut', handleZoomOut);
-			window.removeEventListener('toggleMenu', handleToggleMenu);
 			window.removeEventListener('toggleProfile', handleToggleProfile);
 			window.removeEventListener('mapStyleChange', handleMapStyleChange);
 		};

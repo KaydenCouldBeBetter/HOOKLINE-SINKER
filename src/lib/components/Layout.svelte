@@ -46,7 +46,7 @@
 
   // Map layers UI state (no longer needed)
   // Tab state for unified information architecture
-  let activeTab: 'plan' | 'spots' = 'plan';
+  let activeTab: 'plan' | 'map' | 'spots' = 'plan';
 
   // Event handlers
   const handleStyleSelect = (style: MapStyle) => {
@@ -137,7 +137,7 @@
     <div class="flex justify-center p-3 border-b border-midnight-border">
       <div class="flex bg-midnight-surfaceDark rounded-lg p-1">
         <button 
-          class="px-4 py-1.5 text-sm font-medium rounded transition-colors ${
+          class="px-3 py-1.5 text-sm font-medium rounded transition-colors ${
             activeTab === 'plan' 
               ? 'bg-midnight-primary text-midnight-glass' 
               : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
@@ -147,7 +147,17 @@
           Plan
         </button>
         <button 
-          class="px-4 py-1.5 text-sm font-medium rounded transition-colors ${
+          class="px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+            activeTab === 'map' 
+              ? 'bg-midnight-primary text-midnight-glass' 
+              : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
+          }"
+          on:click={() => activeTab = 'map'}
+        >
+          Map
+        </button>
+        <button 
+          class="px-3 py-1.5 text-sm font-medium rounded transition-colors ${
             activeTab === 'spots' 
               ? 'bg-midnight-primary text-midnight-glass' 
               : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
@@ -162,21 +172,9 @@
     <!-- Tab Content -->
     <div class="p-4">
       {#if activeTab === 'plan'}
-        <!-- Plan Tab: Horizontal Filter Chips -->
+        <!-- Plan Tab: Horizontal Filter Chips Only -->
         <div class="flex items-center gap-3">
-          <!-- Menu Icon (Left) -->
-          <div class="bg-midnight-glass backdrop-blur-xl border border-midnight-border rounded-full p-3 h-11 flex items-center justify-center">
-            <button class="text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors" title="Main Menu" on:click={() => {
-              const menuEvent = new CustomEvent('toggleMenu');
-              window.dispatchEvent(menuEvent);
-            }}>
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-              </svg>
-            </button>
-          </div>
-          
-          <!-- Horizontal Chip Carousel (Center/Right) -->
+          <!-- Horizontal Chip Carousel (Full Width) -->
           <div class="flex-1 overflow-x-auto scrollbar-hide">
             <div class="flex gap-2 flex-nowrap">
               {#if loading}
@@ -206,29 +204,32 @@
             </div>
           </div>
         </div>
-        
-        <!-- Map Styles Section (Mobile Plan Tab) -->
-        <div class="mt-4 pt-4 border-t border-midnight-border">
-          <div class="flex justify-between items-center mb-3">
-            <h4 class="text-midnight-textPrimary font-medium text-sm tracking-wide">Map Style</h4>
+      {:else if activeTab === 'map'}
+        <!-- Map Tab: Map Style Controls -->
+        <div class="space-y-4">
+          <div class="text-center">
+            <h3 class="text-midnight-textPrimary font-semibold text-sm tracking-wide mb-4">Map Style</h3>
           </div>
-          <div class="overflow-x-auto scrollbar-hide">
-            <div class="flex gap-2 flex-nowrap pb-1">
-              {#each MAP_STYLES as style (style.key)}
-                <button
-                  class="px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 border whitespace-nowrap flex-shrink-0 ${
-                    currentMapStyle === style.key
-                      ? 'bg-midnight-primary text-midnight-glass border-midnight-primary'
-                      : 'bg-midnight-surfaceDark text-midnight-textSecondary border-midnight-border hover:bg-midnight-surfaceLight hover:text-midnight-textPrimary'
-                  }"
-                  on:click={() => handleStyleSelect(style.key as MapStyle)}
-                  title={style.name}
-                >
-                  <span class="mr-1">{style.icon}</span>
-                  {style.name}
-                </button>
-              {/each}
-            </div>
+          
+          <div class="grid grid-cols-2 gap-3">
+            {#each MAP_STYLES as style (style.key)}
+              <button
+                class="flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 ${
+                  currentMapStyle === style.key
+                    ? 'bg-midnight-primary text-midnight-glass border-midnight-primary'
+                    : 'bg-midnight-surfaceDark text-midnight-textSecondary border-midnight-border hover:bg-midnight-surfaceLight hover:text-midnight-textPrimary'
+                }"
+                on:click={() => handleStyleSelect(style.key as MapStyle)}
+                title={style.name}
+              >
+                <span class="text-2xl mb-2">{style.icon}</span>
+                <span class="text-xs font-medium">{style.name}</span>
+              </button>
+            {/each}
+          </div>
+          
+          <div class="text-center text-xs text-midnight-textMuted mt-4">
+            Choose how you want to view the fishing map
           </div>
         </div>
       {:else}
