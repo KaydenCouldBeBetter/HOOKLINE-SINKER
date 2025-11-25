@@ -31,7 +31,9 @@
   export let mapInstance: any = null;
   export let mapMarkers: any[] = [];
 
-  // Layout state only
+  // Reactive calculations
+  $: selectedCount = selectedSpecies.length;
+  $: filterText = selectedCount === 0 ? 'All Species' : `${selectedCount} Selected`;
   let activeTab: 'plan' | 'map' | 'spots' = 'plan';
   let speciesOptions: string[] = [];
   let loading: boolean = false;
@@ -370,12 +372,7 @@
                   on:click={() => (filtersOpen = !filtersOpen)}
                 >
                   <span class="text-base">🎣</span>
-                  <span class="font-medium">
-                    {selectedSpecies.length === 0 
-                      ? 'All Species' 
-                      : `${selectedSpecies.length} Selected`
-                    }
-                  </span>
+                  <span class="font-medium">{filterText}</span>
                   <span class="ml-auto text-xs opacity-70">{filtersOpen ? '▼' : '▲'}</span>
                 </button>
                 
