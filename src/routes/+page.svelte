@@ -130,14 +130,20 @@
 			mapInstance?.zoomOut();
 		};
 
+		const handleResetBearing = () => {
+			mapInstance?.setBearing(0);
+		};
+
 		window.addEventListener('toggleMapLayers', handleToggleLayers);
 		window.addEventListener('mapZoomIn', handleZoomIn);
 		window.addEventListener('mapZoomOut', handleZoomOut);
+		window.addEventListener('resetBearing', handleResetBearing);
 
 		return () => {
 			window.removeEventListener('toggleMapLayers', handleToggleLayers);
 			window.removeEventListener('mapZoomIn', handleZoomIn);
 			window.removeEventListener('mapZoomOut', handleZoomOut);
+			window.removeEventListener('resetBearing', handleResetBearing);
 		};
 	});
 

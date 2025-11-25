@@ -1,4 +1,4 @@
-<!-- Filter Chip - Midnight Standard v3.1 -->
+<!-- Filter Chip - Midnight Standard v3.3 -->
 <script lang="ts">
   export let active: boolean = false;
   export let label: string = '';

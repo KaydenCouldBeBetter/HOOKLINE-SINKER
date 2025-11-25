@@ -105,66 +105,101 @@
 </script>
 
 {#if isMobile}
-  <!-- Mobile Layout -->
-  <!-- Bottom: Filter Dock -->
-  <div class="absolute bottom-4 left-4 right-4 pointer-events-auto z-20">
-    <UniversalPanel padding="sm" className="max-w-md mx-auto">
-      <div class="flex items-center gap-3">
-        <!-- Filter Chips -->
-        <div class="flex-1 overflow-x-auto scrollbar-hide">
-          {#each speciesOptions as species (species)}
-            <FilterChip 
-              label={species}
-              active={selectedSpecies.includes(species as string)}
-              onClick={() => onToggleSpecies(species as string)}
-            />
-          {/each}
-        </div>
-      </div>
-    </UniversalPanel>
+  <!-- Mobile Layout: Thumb-Driven HUD -->
+  
+  <!-- Top Left: Weather Widget (Passive Status Monitor) -->
+  <div class="fixed top-4 left-4 bg-[#1e1e2e]/90 backdrop-blur-xl border border-white/10 rounded-lg p-3 shadow-lg z-50 pointer-events-none">
+    <div class="flex items-center gap-2">
+      <WeatherWidget 
+        temperature={temperature} 
+        condition={weatherCondition} 
+        moonPhase={moonPhase}
+        compact={true}
+      />
+    </div>
   </div>
-
-  <!-- Top Right: Weather Widget -->
-  <div class="absolute right-4 top-4 pointer-events-auto z-20">
-    <UniversalPanel padding="sm" className="min-w-fit">
-      {#if isLoadingWeather}
-        <div class="text-[#a6adc8] text-sm py-1">
-          Loading weather...
-        </div>
-      {:else if weatherError}
-        <div class="text-[#f38ba8] text-sm py-1">
-          ⚠️ Weather unavailable
-        </div>
-      {:else}
-        <div class="flex items-center gap-2">
-          <WeatherWidget 
-            temperature={temperature} 
-            condition={weatherCondition} 
-            moonPhase={moonPhase}
-          />
-          {#if isUsingCachedWeather}
-            <button 
-              class="text-[#89b4fa] text-xs hover:text-[#b4befe]" 
-              on:click={onRefreshWeather}
-              title="Refresh weather data"
-            >
-              🔄
-            </button>
+  
+  <!-- Top Right: Map Tools (Rarely Used Actions) -->
+  <div class="fixed top-4 right-4 flex gap-2 z-50 pointer-events-auto">
+    <!-- Layers Button -->
+    <div class="bg-[#1e1e2e]/90 backdrop-blur-md border border-white/10 rounded-lg p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
+      <button 
+        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors flex items-center justify-center"
+        on:click={() => {
+          const mapEvent = new CustomEvent('toggleMapLayers');
+          window.dispatchEvent(mapEvent);
+        }}
+        title="Toggle Day/Night Mode"
+      >
+        🗂️
+      </button>
+    </div>
+    
+    <!-- Compass -->
+    <div class="bg-[#1e1e2e]/90 backdrop-blur-md border border-white/10 rounded-lg p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
+      <button 
+        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors flex items-center justify-center"
+        on:click={() => {
+          const mapEvent = new CustomEvent('resetBearing');
+          window.dispatchEvent(mapEvent);
+        }}
+        title="Reset Bearing"
+      >
+        🧭
+      </button>
+    </div>
+  </div>
+  
+  <!-- Bottom Edge: Filter Dock (Primary Navigation Controller) -->
+  <div class="fixed bottom-0 left-0 right-0 bg-[#1e1e2e]/90 backdrop-blur-xl border-t border-white/10 rounded-t-2xl shadow-2xl z-50 pointer-events-auto">
+    <div class="flex items-center justify-between p-4">
+      <!-- Menu Icon (Left) -->
+      <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-lg p-3 h-11 flex items-center justify-center">
+        <button class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors" title="Main Menu">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Horizontal Chip Carousel (Center/Right) -->
+      <div class="flex-1 ml-4 overflow-x-auto scrollbar-hide">
+        <div class="flex gap-2">
+          {#if loading}
+            <div class="text-[#a6adc8] text-sm h-11 flex items-center">
+              Loading species...
+            </div>
+          {:else if error}
+            <div class="text-[#f38ba8] text-sm h-11 flex items-center">
+              ⚠️ Error loading
+            </div>
+          {:else}
+            {#each speciesOptions as species (species)}
+              <FilterChip 
+                label={species}
+                active={selectedSpecies.includes(species as string)}
+                onClick={() => onToggleSpecies(species as string)}
+              />
+            {/each}
           {/if}
         </div>
-      {/if}
-    </UniversalPanel>
+      </div>
+    </div>
   </div>
-
-  <!-- Right Edge: Control Stack -->
-  <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
-    <ControlButton icon="�" size="sm" onClick={onGPSLocation} />
-    <ControlButton icon="🧭" size="sm" onClick={onResetBearing} />
-    <FloatingActionButton icon="🎣" onClick={onLogCatch} />
+  
+  <!-- Bottom Right: Primary Action (Critical In-the-Moment Action) -->
+  <div class="fixed bottom-20 right-4 bg-[#cba6f7] rounded-full p-4 shadow-xl hover:bg-[#b4a8f5] transition-all duration-200 z-50 pointer-events-auto">
+    <button 
+      class="text-[#1e1e2e] text-xl flex items-center justify-center"
+      on:click={onLogCatch}
+      title="Log Catch"
+    >
+      🎣
+    </button>
   </div>
 {:else}
   <!-- Desktop Layout: Floating Command Card (Top Left) -->
-  <div class="fixed top-6 left-6 w-[24rem] bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/5 rounded-2xl shadow-2xl z-50 pointer-events-auto">
+  <div class="fixed top-6 left-6 w-[380px] bg-[#1e1e2e]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 pointer-events-auto">
     <!-- Header Row -->
     <div class="flex justify-between items-center p-4 border-b border-white/10">
       <!-- Hamburger Menu -->
@@ -175,75 +210,98 @@
       </button>
       
       <!-- User Avatar -->
-      <div class="w-8 h-8 bg-[#89b4fa] rounded-full flex items-center justify-center text-[#1e1e2e] font-semibold text-sm hover:bg-[#b4f8f8] transition-colors cursor-pointer">
+      <div class="w-8 h-8 bg-[#89b4fa] rounded-full flex items-center justify-center text-[#1e1e2e] font-semibold text-sm hover:bg-[#b4f8f8] transition-colors cursor-pointer" title="User Profile">
         U
       </div>
     </div>
     
     <!-- Content Area -->
     <div class="p-5">
-      <!-- Weather Header -->
-      <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
-        <div>
-          <h2 class="text-[#cdd6f4] font-semibold text-sm tracking-wide">Weather</h2>
-          {#if isUsingCachedWeather}
-            <div class="text-[#89b4fa] text-xs mt-1">Cached data</div>
-          {/if}
-        </div>
-        <div class="flex items-center gap-3">
-          <WeatherWidget 
-            temperature={temperature} 
-            condition={weatherCondition} 
-            moonPhase={moonPhase}
-          />
-          {#if isUsingCachedWeather}
-            <button 
-              class="text-[#89b4fa] text-xs hover:text-[#b4befe] transition-colors opacity-70 hover:opacity-100"
-              on:click={onRefreshWeather}
-              title="Refresh weather data"
-            >
-              🔄
-            </button>
-          {/if}
+      <!-- Current Conditions Section -->
+      <div class="mb-5">
+        <h3 class="text-[#cdd6f4] font-semibold text-sm tracking-wide mb-3">Current Conditions</h3>
+        <div class="bg-[#1e1e2e]/50 rounded-lg p-4 border border-white/5">
+          <!-- Go/No-Go Weather Info -->
+          <div class="flex justify-between items-center mb-3">
+            <div>
+              <h4 class="text-[#cdd6f4] font-medium">Weather Status</h4>
+              {#if isUsingCachedWeather}
+                <div class="text-[#89b4fa] text-xs mt-1">Cached data</div>
+              {/if}
+            </div>
+            <div class="flex items-center gap-3">
+              <WeatherWidget 
+                temperature={temperature} 
+                condition={weatherCondition} 
+                moonPhase={moonPhase}
+              />
+              {#if isUsingCachedWeather}
+                <button 
+                  class="text-[#89b4fa] text-xs hover:text-[#b4befe] transition-colors opacity-70 hover:opacity-100"
+                  on:click={onRefreshWeather}
+                  title="Refresh weather data"
+                >
+                  🔄
+                </button>
+              {/if}
+            </div>
+          </div>
+          
+          <!-- Quick Filters -->
+          <div>
+            <h4 class="text-[#cdd6f4] font-medium text-sm mb-3">Quick Filters</h4>
+            {#if loading}
+              <div class="text-[#a6adc8] text-sm">
+                Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
+              </div>
+            {:else if error}
+              <div class="text-[#f38ba8] text-sm">
+                ⚠️ Error: {error}
+                <button 
+                  class="ml-2 text-xs underline hover:text-[#f2cdcd]" 
+                  on:click={() => loadSpecies()}
+                >
+                  Retry
+                </button>
+              </div>
+            {:else}
+              <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto scrollbar-hide">
+                {#each speciesOptions as species (species)}
+                  <FilterChip 
+                    label={species}
+                    active={selectedSpecies.includes(species as string)}
+                    onClick={() => onToggleSpecies(species as string)}
+                  />
+                {/each}
+              </div>
+            {/if}
+          </div>
         </div>
       </div>
       
-      <!-- Quick Filters -->
-      <div>
-        <h3 class="text-[#cdd6f4] font-semibold text-sm tracking-wide mb-3">Quick Filters</h3>
-        {#if loading}
-          <div class="text-[#a6adc8] text-sm">
-            Loading species{retryCount > 0 ? `... (retry ${retryCount}/${maxRetries})` : '...'}
-          </div>
-        {:else if error}
-          <div class="text-[#f38ba8] text-sm">
-            ⚠️ Error: {error}
-            <button 
-              class="ml-2 text-xs underline hover:text-[#f2cdcd]" 
-              on:click={() => loadSpecies()}
-            >
-              Retry
-            </button>
-          </div>
-        {:else}
-          <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto scrollbar-hide">
-            {#each speciesOptions as species (species)}
-              <FilterChip 
-                label={species}
-                active={selectedSpecies.includes(species as string)}
-                onClick={() => onToggleSpecies(species as string)}
-              />
-            {/each}
-          </div>
-        {/if}
-      </div>
+      <!-- Spot Details Section (Hidden by default, shown when location selected) -->
+      <!-- This will be populated when user clicks a lake/spot -->
     </div>
   </div>
 
   <!-- Right Side Controls -->
   <div class="fixed right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
+    <!-- Compass Button (Top) -->
+    <div class="bg-[#1e1e2e]/90 backdrop-blur-md border border-white/10 rounded-full p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
+      <button 
+        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-lg flex items-center justify-center"
+        on:click={() => {
+          const mapEvent = new CustomEvent('resetBearing');
+          window.dispatchEvent(mapEvent);
+        }}
+        title="Reset Bearing to North"
+      >
+        🧭
+      </button>
+    </div>
+    
     <!-- Map Layers Button -->
-    <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
+    <div class="bg-[#1e1e2e]/90 backdrop-blur-md border border-white/10 rounded-full p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
       <button 
         class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-lg flex items-center justify-center"
         on:click={() => {
@@ -256,8 +314,8 @@
       </button>
     </div>
     
-    <!-- Zoom Controls (Glass Style) -->
-    <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
+    <!-- Zoom Controls -->
+    <div class="bg-[#1e1e2e]/90 backdrop-blur-md border border-white/10 rounded-full p-2 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
       <div class="flex flex-col gap-1">
         <button 
           class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-sm px-2 py-1 hover:bg-white/10 rounded flex items-center justify-center"
@@ -283,7 +341,15 @@
       </div>
     </div>
     
-    <!-- Log Catch (Mauve FAB) -->
-    <FloatingActionButton icon="🎣" onClick={onLogCatch} />
+    <!-- Log Catch FAB (Bottom Right) -->
+    <div class="bg-[#cba6f7] rounded-full p-4 shadow-xl hover:bg-[#b4a8f5] transition-all duration-200 flex items-center justify-center">
+      <button 
+        class="text-[#1e1e2e] text-xl flex items-center justify-center"
+        on:click={onLogCatch}
+        title="Log Catch"
+      >
+        🎣
+      </button>
+    </div>
   </div>
 {/if}
