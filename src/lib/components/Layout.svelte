@@ -224,10 +224,10 @@
 
   <!-- Right Side Controls -->
   <div class="fixed right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
-    <!-- GPS Button (Sky Blue) -->
-    <div class="bg-[#1e1e2e]/80 backdrop-blur-sm border border-white/10 rounded-lg p-2">
+    <!-- GPS Button (Sky Blue Glass) -->
+    <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
       <button 
-        class="text-[#89dceb] hover:text-[#b4f8f8] transition-colors"
+        class="text-[#89dceb] hover:text-[#b4f8f8] transition-colors text-lg"
         on:click={onGPSLocation}
         title="GPS Location"
       >
@@ -235,36 +235,37 @@
       </button>
     </div>
     
-    <!-- Zoom Controls -->
-    <div class="bg-[#1e1e2e]/80 backdrop-blur-sm border border-white/10 rounded-lg flex flex-col gap-1 p-1">
-      <button 
-        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-sm px-1 py-1"
-        on:click={() => {
-          // Custom zoom in logic
-          const mapEvent = new CustomEvent('mapZoomIn');
-          window.dispatchEvent(mapEvent);
-        }}
-        title="Zoom In"
-      >
-        +
-      </button>
-      <button 
-        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-sm px-1 py-1"
-        on:click={() => {
-          // Custom zoom out logic
-          const mapEvent = new CustomEvent('mapZoomOut');
-          window.dispatchEvent(mapEvent);
-        }}
-        title="Zoom Out"
-      >
-        −
-      </button>
+    <!-- Zoom Controls (Glass Style) -->
+    <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
+      <div class="flex flex-col gap-1">
+        <button 
+          class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-sm px-2 py-1 hover:bg-white/10 rounded"
+          on:click={() => {
+            const mapEvent = new CustomEvent('mapZoomIn');
+            window.dispatchEvent(mapEvent);
+          }}
+          title="Zoom In"
+        >
+          +
+        </button>
+        <div class="h-px bg-white/10 mx-1"></div>
+        <button 
+          class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-sm px-2 py-1 hover:bg-white/10 rounded"
+          on:click={() => {
+            const mapEvent = new CustomEvent('mapZoomOut');
+            window.dispatchEvent(mapEvent);
+          }}
+          title="Zoom Out"
+        >
+          −
+        </button>
+      </div>
     </div>
     
-    <!-- Reset Bearing -->
-    <div class="bg-[#1e1e2e]/80 backdrop-blur-sm border border-white/10 rounded-lg p-2">
+    <!-- Reset Bearing (Glass Style) -->
+    <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
       <button 
-        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors"
+        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-lg"
         on:click={onResetBearing}
         title="Reset Bearing"
       >
@@ -272,7 +273,7 @@
       </button>
     </div>
     
-    <!-- Log Catch (Mauve with Hook) -->
+    <!-- Log Catch (Mauve FAB) -->
     <FloatingActionButton icon="🎣" onClick={onLogCatch} />
   </div>
 {/if}
