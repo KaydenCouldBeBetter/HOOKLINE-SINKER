@@ -58,7 +58,7 @@ function updateImage(image_id: number, updates: Partial<Image>): boolean {
 
     const values = Object.keys(updates)
         .filter(key => key !== 'image_id')
-        .map(key => updates[key as keyof Image]);
+        .map(key => updates[key as keyof Image] ?? null);
 
     const stmt = db.prepare(`
         UPDATE images

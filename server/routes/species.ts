@@ -74,7 +74,7 @@ function updateSpecies(species_id: number, updates: Partial<Species>): boolean {
 
     const values = Object.keys(updates)
         .filter(key => key !== 'species_id')
-        .map(key => updates[key as keyof Species]);
+        .map(key => updates[key as keyof Species] ?? null);
 
     const stmt = db.prepare(`
         UPDATE species

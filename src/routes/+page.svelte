@@ -5,6 +5,7 @@
 	import type { MapStyle } from '$lib/config/map';
 	import { cache, CACHE_KEYS, CACHE_TTL } from '$lib/utils/cache';
 	import { onMount } from 'svelte';
+	import mapboxgl from 'mapbox-gl';
 
 	// Map state
 	let mapContainer: HTMLDivElement | null = null;
@@ -17,6 +18,8 @@
 	let weatherError: string | null = null;
 	let isLoadingWeather: boolean = false;
 	let isUsingCachedWeather: boolean = false;
+	let markers: any[] = [];
+	let mapMarkers: mapboxgl.Marker[] = [];
 
 	// UI state
 	let isMobile: boolean = false;
@@ -41,9 +44,10 @@
 			: [...selectedSpecies, species];
 	};
 
-	const handleMapReady = (map: any) => {
+	const handleMapReady = async (map: any) => {
 		mapInstance = map;
-		loadData();
+		await loadData();
+		await loadMarkers();
 	};
 
 	const handleMapError = (error: string) => {
@@ -171,6 +175,68 @@
 	const refreshSpecies = () => {
 		cache.invalidate(CACHE_KEYS.SPECIES);
 		// Trigger species reload through Layout component
+	};
+
+	const loadMarkers = async () => {
+		if (!mapInstance) return;
+
+		try {
+			const response = await fetch('/api/markers');
+			if (!response.ok) {
+				throw new Error(`Markers API returned ${response.status}`);
+			}
+			markers = await response.json();
+			renderMarkers();
+		} catch (error) {
+			console.error('Failed to load markers:', error);
+		}
+	};
+
+	const renderMarkers = () => {
+		if (!mapInstance) return;
+
+		// Clear existing markers
+		mapMarkers.forEach(marker => marker.remove());
+		mapMarkers = [];
+
+		// Add new markers
+		markers.forEach((marker: any) => {
+			const el = document.createElement('div');
+			el.className = 'custom-marker';
+			el.style.width = '24px';
+			el.style.height = '24px';
+			el.style.borderRadius = '50%';
+			el.style.cursor = 'pointer';
+			el.style.border = '2px solid white';
+			
+			// Color by category
+			if (marker.category === 'lake') {
+				el.style.backgroundColor = '#3b82f6'; // blue
+			} else if (marker.category === 'river') {
+				el.style.backgroundColor = '#10b981'; // green
+			} else if (marker.category === 'parking') {
+				el.style.backgroundColor = '#f59e0b'; // orange
+			} else {
+				el.style.backgroundColor = '#6366f1'; // indigo
+			}
+
+			const mapMarker = new mapboxgl.Marker(el)
+				.setLngLat([marker.lng, marker.lat])
+				.setPopup(
+					new mapboxgl.Popup({ offset: 25 }).setHTML(
+						`<div style="color: black;">
+							<h3 style="font-weight: bold; margin-bottom: 4px;">${marker.title}</h3>
+							${marker.description ? `<p style="font-size: 12px;">${marker.description}</p>` : ''}
+							<p style="font-size: 11px; color: #666; margin-top: 4px;">Category: ${marker.category}</p>
+						</div>`
+					)
+				)
+				.addTo(mapInstance);
+
+			mapMarkers.push(mapMarker);
+		});
+
+		console.log(`Rendered ${mapMarkers.length} markers on the map`);
 	};
 </script>
 

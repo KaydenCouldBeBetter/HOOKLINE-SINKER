@@ -112,8 +112,8 @@ function updateLocation(location_id: number, updates: Partial<Location>): boolea
     if (!fields) return false;
 
     const values = Object.keys(updates)
-        .filter(key => key !== 'location_id')
-        .map(key => updates[key as keyof Location]);
+        .filter((key) => key !== 'location_id')
+        .map((key) => updates[key as keyof Location] ?? null);
 
     const stmt = db.prepare(`
         UPDATE locations
