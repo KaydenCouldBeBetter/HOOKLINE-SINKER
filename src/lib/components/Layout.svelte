@@ -1,11 +1,13 @@
-<!-- Responsive Layout - Midnight Standard v4.0 -->
+<!-- Responsive Layout - Midnight Standard v4.0 (SRP Compliant) -->
 <script lang="ts">
   import FilterChip from './FilterChip.svelte';
   import WeatherWidget from './WeatherWidget.svelte';
-  import { onMount } from 'svelte';
-  import { cache, CACHE_KEYS, CACHE_TTL } from '$lib/utils/cache';
+  import SpeciesManager from './SpeciesManager.svelte';
+  import TabNavigation from './TabNavigation.svelte';
+  import MapStyleSelector from './MapStyleSelector.svelte';
   import type { MapStyle } from '$lib/config/map';
 
+  // Layout props only - no business logic
   export let selectedSpecies: string[] = [];
   export let onToggleSpecies: (species: string) => void = () => {};
   export let temperature: number = 24;
@@ -27,95 +29,45 @@
   export let isLoadingRecommendations: boolean = false;
   export let mapInstance: any = null;
   export let mapMarkers: any[] = [];
-  
-  // Map styles data
-  const MAP_STYLES = [
-    { key: 'structure', name: 'Midnight Water', icon: '🌊' },
-    { key: 'satellite', name: 'Satellite', icon: '🛰️' },
-    { key: 'terrain', name: 'Terrain', icon: '⛰️' },
-    { key: 'night', name: 'Night', icon: '🌙' }
-  ];
 
-  // Local state
+  // Layout state only
+  let activeTab: 'plan' | 'map' | 'spots' = 'plan';
   let speciesOptions: string[] = [];
   let loading: boolean = false;
   let error: string | null = null;
-  let retryCount: number = 0;
-  const maxRetries: number = 3;
-  let isUsingCachedSpecies: boolean = false;
 
-  // Map layers UI state (no longer needed)
-  // Tab state for unified information architecture
-  let activeTab: 'plan' | 'map' | 'spots' = 'plan';
+  // Event handlers - delegate to parent
+  const handleTabChange = (tab: 'plan' | 'map' | 'spots') => {
+    activeTab = tab;
+  };
 
-  // Event handlers
-  const handleStyleSelect = (style: MapStyle) => {
+  const handleMapStyleChange = (style: MapStyle) => {
     // Dispatch custom event for parent component to handle
     const mapStyleEvent = new CustomEvent('mapStyleChange', { detail: style });
     window.dispatchEvent(mapStyleEvent);
   };
 
-  const refreshSpecies = () => {
-    cache.invalidate(CACHE_KEYS.SPECIES);
-    retryCount = 0;
-    loadSpecies();
+  const handleSpeciesLoaded = (species: string[]) => {
+    speciesOptions = species;
   };
 
-  // Load species data with caching
-  const loadSpecies = async () => {
-    loading = true;
-    error = null;
-
-    try {
-      // Check cache first
-      const cachedData = cache.get<string[]>(CACHE_KEYS.SPECIES);
-      if (cachedData) {
-        speciesOptions = cachedData;
-        isUsingCachedSpecies = true;
-        return;
-      }
-
-      // Fetch from API
-      const response = await fetch('/api/species');
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      if (!data || !Array.isArray(data) || data.length === 0) {
-        throw new Error('Invalid species data format');
-      }
-
-      // Process and cache data
-      const processedSpecies = data
-        .filter((item: any) => item?.species_name)
-        .map((item: any) => item.species_name)
-        .filter((name: string) => typeof name === 'string')
-        .sort((a: string, b: string) => a.localeCompare(b));
-
-      speciesOptions = processedSpecies;
-      isUsingCachedSpecies = false;
-      cache.set(CACHE_KEYS.SPECIES, processedSpecies, CACHE_TTL.SPECIES);
-
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load species';
-      
-      // Retry logic
-      if (retryCount < maxRetries) {
-        retryCount++;
-        setTimeout(loadSpecies, 1000 * retryCount);
-      }
-    } finally {
-      loading = false;
-    }
+  const handleSpeciesError = (errorMessage: string) => {
+    error = errorMessage;
   };
 
-  onMount(() => {
-    loadSpecies();
-  });
+  const handleSpeciesLoadingChange = (isLoading: boolean) => {
+    loading = isLoading;
+  };
 </script>
 
 {#if isMobile}
+  <!-- Species Manager - handles data loading logic -->
+  <SpeciesManager 
+    onSpeciesLoaded={handleSpeciesLoaded}
+    onError={handleSpeciesError}
+    onLoadingChange={handleSpeciesLoadingChange}
+  />
+  
   <!-- Mobile Layout: Thumb-Driven HUD -->
   
   <!-- Top Left: Weather Widget (Passive Status Monitor) -->
@@ -133,41 +85,12 @@
     
   <!-- Bottom Edge: Tabbed Control Dock -->
   <div class="fixed bottom-0 left-0 right-0 bg-midnight-glass backdrop-blur-xl border-t border-midnight-border rounded-t-2xl shadow-2xl z-50 pointer-events-auto">
-    <!-- Tab Toggle Header -->
-    <div class="flex justify-center p-3 border-b border-midnight-border">
-      <div class="flex bg-midnight-surfaceDark rounded-lg p-1">
-        <button 
-          class="px-3 py-1.5 text-sm font-medium rounded transition-colors ${
-            activeTab === 'plan' 
-              ? 'bg-midnight-primary text-midnight-glass' 
-              : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
-          }"
-          on:click={() => activeTab = 'plan'}
-        >
-          Plan
-        </button>
-        <button 
-          class="px-3 py-1.5 text-sm font-medium rounded transition-colors ${
-            activeTab === 'map' 
-              ? 'bg-midnight-primary text-midnight-glass' 
-              : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
-          }"
-          on:click={() => activeTab = 'map'}
-        >
-          Map
-        </button>
-        <button 
-          class="px-3 py-1.5 text-sm font-medium rounded transition-colors ${
-            activeTab === 'spots' 
-              ? 'bg-midnight-primary text-midnight-glass' 
-              : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
-          }"
-          on:click={() => activeTab = 'spots'}
-        >
-          Spots
-        </button>
-      </div>
-    </div>
+    <!-- Tab Navigation -->
+    <TabNavigation 
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      variant="mobile"
+    />
     
     <!-- Tab Content -->
     <div class="p-4">
@@ -178,7 +101,7 @@
           <div class="flex-1 overflow-x-auto scrollbar-hide">
             <div class="flex gap-2 flex-nowrap">
               {#if loading}
-                <div class="text-midnight-textSecondary text-sm h-11 flex items-center">
+                <div class="text-[#a6adc8] text-sm h-11 flex items-center pb-4">
                   Loading species...
                 </div>
               {:else if error}
@@ -206,31 +129,13 @@
         </div>
       {:else if activeTab === 'map'}
         <!-- Map Tab: Map Style Controls -->
-        <div class="space-y-4">
-          <div class="text-center">
-            <h3 class="text-midnight-textPrimary font-semibold text-sm tracking-wide mb-4">Map Style</h3>
-          </div>
-          
-          <div class="grid grid-cols-2 gap-3">
-            {#each MAP_STYLES as style (style.key)}
-              <button
-                class="flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 ${
-                  currentMapStyle === style.key
-                    ? 'bg-midnight-primary text-midnight-glass border-midnight-primary'
-                    : 'bg-midnight-surfaceDark text-midnight-textSecondary border-midnight-border hover:bg-midnight-surfaceLight hover:text-midnight-textPrimary'
-                }"
-                on:click={() => handleStyleSelect(style.key as MapStyle)}
-                title={style.name}
-              >
-                <span class="text-2xl mb-2">{style.icon}</span>
-                <span class="text-xs font-medium">{style.name}</span>
-              </button>
-            {/each}
-          </div>
-          
-          <div class="text-center text-xs text-midnight-textMuted mt-4">
-            Choose how you want to view the fishing map
-          </div>
+        <MapStyleSelector 
+          currentMapStyle={currentMapStyle}
+          onStyleSelect={handleMapStyleChange}
+          variant="mobile"
+        />  
+        <div class="text-center text-xs text-midnight-textMuted mt-4">
+          Choose how you want to view the fishing map
         </div>
       {:else}
         <!-- Spots Tab: Vertical Scrolling List -->
@@ -333,28 +238,11 @@
     <!-- Header Row with Tabs -->
     <div class="flex justify-between items-center p-4 border-b border-midnight-border">
       <!-- Tab Navigation -->
-      <div class="flex bg-midnight-surfaceDark rounded-lg p-1">
-        <button 
-          class="px-3 py-1.5 text-sm font-medium rounded transition-colors ${
-            activeTab === 'plan' 
-              ? 'bg-midnight-primary text-midnight-glass' 
-              : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
-          }"
-          on:click={() => activeTab = 'plan'}
-        >
-          Plan
-        </button>
-        <button 
-          class="px-3 py-1.5 text-sm font-medium rounded transition-colors ${
-            activeTab === 'spots' 
-              ? 'bg-midnight-primary text-midnight-glass' 
-              : 'text-midnight-textSecondary hover:text-midnight-textPrimary'
-          }"
-          on:click={() => activeTab = 'spots'}
-        >
-          Spots
-        </button>
-      </div>
+      <TabNavigation 
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        variant="desktop"
+      />
       
       <!-- User Avatar -->
       <button class="w-8 h-8 bg-midnight-water rounded-full flex items-center justify-center text-midnight-glass font-semibold text-sm hover:bg-midnight-water/80 transition-colors cursor-pointer" title="User Profile" on:click={() => {
@@ -416,7 +304,7 @@
                 </div>
                 <div class="flex flex-wrap gap-2">
                   {#if loading}
-                    <div class="text-midnight-textSecondary text-sm py-2">Loading species...</div>
+                    <div class="text-[#a6adc8] text-sm py-2 pb-4">Loading species...</div>
                   {:else if error}
                     <div class="text-midnight-warning text-sm py-2">
                       ⚠️ Error loading
@@ -441,27 +329,11 @@
               </div>
               
               <!-- Map Styles -->
-              <div>
-                <div class="flex justify-between items-center mb-4">
-                  <h4 class="text-midnight-textPrimary font-medium text-sm tracking-wide">Map Style</h4>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  {#each MAP_STYLES as style (style.key)}
-                    <button
-                      class="px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 border ${
-                        currentMapStyle === style.key
-                          ? 'bg-midnight-primary text-midnight-glass border-midnight-primary'
-                          : 'bg-midnight-surfaceDark text-midnight-textSecondary border-midnight-border hover:bg-midnight-surfaceLight hover:text-midnight-textPrimary'
-                      }"
-                      on:click={() => handleStyleSelect(style.key as MapStyle)}
-                      title={style.name}
-                    >
-                      <span class="mr-1">{style.icon}</span>
-                      {style.name}
-                    </button>
-                  {/each}
-                </div>
-              </div>
+              <MapStyleSelector 
+                currentMapStyle={currentMapStyle}
+                onStyleSelect={handleMapStyleChange}
+                variant="desktop"
+              />
             </div>
           </div>
         </div>
@@ -680,11 +552,11 @@
 	}
 
 	input:checked + .slider {
-		background-color: #cba6f7;
+		background-color: var(--color-accent-primary);
 	}
 
 	input:focus + .slider {
-		box-shadow: 0 0 1px #cba6f7;
+		box-shadow: 0 0 1px var(--color-accent-primary);
 	}
 
 	input:checked + .slider:before {

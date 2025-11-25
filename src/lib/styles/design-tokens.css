@@ -142,3 +142,24 @@
   --z-modal: 1050;
 }
 
+/* ===== COMPONENT-SPECIFIC TOKENS ===== */
+:root {
+  /* Button Heights */
+  --button-height-sm: 36px;
+  --button-height-md: 44px;
+  --button-height-lg: 52px;
+  
+  /* Input Heights */
+  --input-height: 44px;
+  
+  /* Card Spacing */
+  --card-padding-sm: var(--space-4);
+  --card-padding-md: var(--space-6);
+  --card-padding-lg: var(--space-10);
+  
+  /* Tab Specific */
+  --tab-padding-x: var(--space-4);
+  --tab-padding-y: var(--space-2);
+  --tab-border-width: 2px;
+}
+
