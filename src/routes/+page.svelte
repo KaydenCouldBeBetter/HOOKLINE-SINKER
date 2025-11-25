@@ -171,5 +171,15 @@
 		onGPSLocation={handleGPSLocation}
 		onLogCatch={handleLogCatch}
 		{isMobile}
-	/>
+	>
+		{#if !isMobile}
+			<svelte:fragment slot="themeSelector">
+				<MapStyleSelector 
+					bind:currentStyle={mapStyle} 
+					on:styleChange={handleMapStyleChange}
+					{isMobile}
+				/>
+			</svelte:fragment>
+		{/if}
+	</Layout>
 </div>

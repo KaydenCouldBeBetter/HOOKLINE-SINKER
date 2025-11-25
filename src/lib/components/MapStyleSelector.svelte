@@ -79,40 +79,38 @@
       </UniversalPanel>
     </div>
   {:else}
-    <!-- Desktop: Bottom left corner -->
-    <div class="absolute left-4 bottom-4">
-      <UniversalPanel padding="sm" className="min-w-64">
-        <button 
-          class="flex items-center gap-2 w-full text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors"
-          on:click={toggleOpen}
-        >
-          <span class="text-lg">{MAP_STYLES[safeCurrentStyle].icon}</span>
-          <span class="text-sm font-medium">{MAP_STYLES[safeCurrentStyle].name}</span>
-          <span class="ml-auto text-xs opacity-70">{isOpen ? '▼' : '▲'}</span>
-        </button>
-        
-        {#if isOpen}
-          <div class="mt-2 space-y-1 max-h-64 overflow-y-auto scrollbar-hide">
-            {#each styleKeys as style (style)}
-              {@const currentStyleKey = style as MapStyle}
-              <button
-                class="flex items-center gap-2 w-full p-2 rounded-lg text-left transition-colors {
-                  safeCurrentStyle === currentStyleKey 
-                    ? 'bg-[#cba6f7] text-[#1e1e2e]' 
-                    : 'text-[#a6adc8] hover:bg-white/5 hover:text-[#cdd6f4]'
-                }"
-                on:click={() => selectStyle(currentStyleKey)}
-              >
-                <span class="text-base">{MAP_STYLES[currentStyleKey].icon}</span>
-                <div class="flex-1">
-                  <div class="text-sm font-medium">{MAP_STYLES[currentStyleKey].name}</div>
-                  <div class="text-xs opacity-70">{MAP_STYLES[currentStyleKey].description}</div>
-                </div>
-              </button>
-            {/each}
-          </div>
-        {/if}
-      </UniversalPanel>
+    <!-- Desktop: Compact version for command card -->
+    <div class="w-full">
+      <button 
+        class="flex items-center gap-2 w-full text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors bg-white/5 rounded-lg px-3 py-2 text-sm"
+        on:click={toggleOpen}
+      >
+        <span class="text-base">{MAP_STYLES[safeCurrentStyle].icon}</span>
+        <span class="font-medium">{MAP_STYLES[safeCurrentStyle].name}</span>
+        <span class="ml-auto text-xs opacity-70">{isOpen ? '▼' : '▲'}</span>
+      </button>
+      
+      {#if isOpen}
+        <div class="mt-2 space-y-1 max-h-40 overflow-y-auto scrollbar-hide">
+          {#each styleKeys as style (style)}
+            {@const currentStyleKey = style as MapStyle}
+            <button
+              class="flex items-center gap-2 w-full p-2 rounded-lg text-left transition-colors text-sm {
+                safeCurrentStyle === currentStyleKey 
+                  ? 'bg-[#cba6f7] text-[#1e1e2e]' 
+                  : 'text-[#a6adc8] hover:bg-white/5 hover:text-[#cdd6f4]'
+              }"
+              on:click={() => selectStyle(currentStyleKey)}
+            >
+              <span class="text-base">{MAP_STYLES[currentStyleKey].icon}</span>
+              <div class="flex-1">
+                <div class="font-medium">{MAP_STYLES[currentStyleKey].name}</div>
+                <div class="text-xs opacity-70">{MAP_STYLES[currentStyleKey].description}</div>
+              </div>
+            </button>
+          {/each}
+        </div>
+      {/if}
     </div>
   {/if}
 </div>
