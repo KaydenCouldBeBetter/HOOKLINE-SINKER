@@ -41,9 +41,9 @@
   }
 </script>
 
-<div class="map-style-selector pointer-events-auto z-20">
+<div class="map-style-selector pointer-events-auto z-30">
   {#if isMobile}
-    <!-- Mobile: Top right corner -->
+    <!-- Mobile: Top right corner, above bottom sheet -->
     <div class="absolute right-4 top-16">
       <UniversalPanel padding="sm" className="min-w-48">
         <button 
