@@ -61,13 +61,19 @@
 	};
 
 	onMount(() => {
+		console.log('DEBUG: accessToken =', accessToken);
+		console.log('DEBUG: accessToken type =', typeof accessToken);
+		console.log('DEBUG: accessToken length =', accessToken?.length);
+		
 		if (!accessToken) {
+			console.log('DEBUG: accessToken is falsy, setting mapError');
 			mapError = MISSING_TOKEN_MESSAGE;
 			onMapError?.(MISSING_TOKEN_MESSAGE);
 			return;
 		}
 
 		try {
+			console.log('DEBUG: Attempting to initialize map...');
 			mapInstance = new mapboxgl.Map({
 				container: mapContainer!,
 				style: MAP_STYLES[mapStyle].url,
