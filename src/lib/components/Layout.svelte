@@ -136,7 +136,7 @@
   <!-- Top Right: Map Tools (Rarely Used Actions) -->
   <div class="fixed top-4 right-4 flex gap-2 z-50 pointer-events-auto">
     <!-- Layers Button -->
-    <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-lg p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200">
+    <div class="bg-[#1e1e2e]/90 backdrop-blur-xl border border-white/10 rounded-full p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200">
       <button 
         class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors flex items-center justify-center"
         on:click={handleMapLayersClick}
@@ -151,7 +151,7 @@
   <div class="fixed bottom-0 left-0 right-0 bg-[#1e1e2e]/70 backdrop-blur-xl border-t border-white/10 rounded-t-2xl shadow-2xl z-50 pointer-events-auto">
     <div class="flex items-center justify-between p-4">
       <!-- Menu Icon (Left) -->
-      <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-lg p-3 h-11 flex items-center justify-center">
+      <div class="bg-[#1e1e2e]/90 backdrop-blur-xl border border-white/10 rounded-full p-3 h-11 flex items-center justify-center">
         <button class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors" title="Main Menu" on:click={() => {
           const menuEvent = new CustomEvent('toggleMenu');
           window.dispatchEvent(menuEvent);
@@ -318,7 +318,7 @@
   <!-- Right Side Controls -->
   <div class="fixed right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
     <!-- Map Layers Button (Top) -->
-    <div bind:this={layersButtonRef} class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-full p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center relative">
+    <div bind:this={layersButtonRef} class="bg-[#1e1e2e]/90 backdrop-blur-xl border border-white/10 rounded-full p-3 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center relative">
       <button 
         class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-lg flex items-center justify-center"
         on:click={handleMapLayersClick}
@@ -337,7 +337,7 @@
     </div>
     
     <!-- Zoom Controls -->
-    <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200">
+    <div class="bg-[#1e1e2e]/90 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-xl hover:bg-[#1e1e2e]/80 transition-all duration-200">
       <div class="flex flex-col gap-1">
         <button 
           class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-sm px-2 py-1 hover:bg-white/10 rounded flex items-center justify-center"
