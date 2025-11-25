@@ -56,7 +56,7 @@
         </button>
         
         {#if isOpen}
-          <div class="mt-2 space-y-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+          <div class="mt-2 space-y-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 border border-midnight-border bg-midnight-surfaceDark rounded-lg p-2">
             {#each styleKeys as style (style)}
               {@const currentStyleKey = style as MapStyle}
               <button
@@ -82,7 +82,7 @@
     <!-- Desktop: Compact version for floating panel -->
     <div class="w-full">
       <button 
-        class="flex items-center gap-2 w-full text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors bg-midnight-surfaceDark rounded-lg px-3 py-2 text-sm"
+        class="flex items-center gap-2 w-full text-midnight-textPrimary hover:text-midnight-textSecondary transition-colors bg-midnight-surfaceDark rounded-lg px-3 py-2 text-sm border border-midnight-border"
         on:click={toggleOpen}
       >
         <span class="text-base">{MAP_STYLES[safeCurrentStyle as MapStyle].icon}</span>
@@ -91,7 +91,7 @@
       </button>
       
       {#if isOpen}
-        <div class="mt-2 space-y-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+        <div class="mt-2 space-y-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 border border-midnight-border bg-midnight-surfaceDark rounded-lg p-2">
           {#each styleKeys as style (style)}
             {@const currentStyleKey = style as MapStyle}
             <button
