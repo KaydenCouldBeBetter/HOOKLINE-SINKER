@@ -224,17 +224,6 @@
 
   <!-- Right Side Controls -->
   <div class="fixed right-6 top-1/2 -translate-y-1/2 pointer-events-auto z-20 flex flex-col gap-3">
-    <!-- GPS Button (Sky Blue Glass) -->
-    <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
-      <button 
-        class="text-[#89dceb] hover:text-[#b4f8f8] transition-colors text-lg flex items-center justify-center"
-        on:click={onGPSLocation}
-        title="GPS Location"
-      >
-        📍
-      </button>
-    </div>
-    
     <!-- Zoom Controls (Glass Style) -->
     <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-xl p-2 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200">
       <div class="flex flex-col gap-1">
@@ -260,17 +249,6 @@
           −
         </button>
       </div>
-    </div>
-    
-    <!-- Reset Bearing (Glass Style) -->
-    <div class="bg-[#1e1e2e]/60 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-lg hover:bg-[#1e1e2e]/80 transition-all duration-200 flex items-center justify-center">
-      <button 
-        class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors text-lg flex items-center justify-center"
-        on:click={onResetBearing}
-        title="Reset Bearing"
-      >
-        🧭
-      </button>
     </div>
     
     <!-- Log Catch (Mauve FAB) -->
