@@ -119,8 +119,12 @@
 
 			// Handle WebGL context loss
 			mapInstance.on('render', () => {
-				const gl = mapInstance.getCanvas().getContext('webgl') || mapInstance.getCanvas().getContext('experimental-webgl');
-				if (gl && gl.isContextLost()) {
+				if (!mapInstance) return;
+				
+				const canvas = mapInstance.getCanvas();
+				const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+				
+				if (gl && 'isContextLost' in gl && gl.isContextLost()) {
 					console.warn('WebGL context lost, attempting to restore...');
 					// Mapbox GL JS should automatically handle context restoration
 					// but we can add custom handling if needed
