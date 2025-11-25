@@ -43,8 +43,8 @@
 
 <div class="map-style-selector pointer-events-auto z-30">
   {#if isMobile}
-    <!-- Mobile: Top left corner -->
-    <div class="absolute left-4 top-4">
+    <!-- Mobile: Bottom left corner, above bottom sheet -->
+    <div class="absolute left-4 bottom-20">
       <UniversalPanel padding="sm" className="min-w-48">
         <button 
           class="flex items-center gap-2 w-full text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors"
@@ -79,8 +79,8 @@
       </UniversalPanel>
     </div>
   {:else}
-    <!-- Desktop: Top left corner -->
-    <div class="absolute left-4 top-4">
+    <!-- Desktop: Bottom left corner -->
+    <div class="absolute left-4 bottom-4">
       <UniversalPanel padding="sm" className="min-w-64">
         <button 
           class="flex items-center gap-2 w-full text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors"
