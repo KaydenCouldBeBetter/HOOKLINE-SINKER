@@ -6,6 +6,8 @@
   export let onSpeciesLoaded: (species: string[]) => void = () => {};
   export let onError: (error: string) => void = () => {};
   export let onLoadingChange: (loading: boolean) => void = () => {};
+  export let onRefreshAvailable: (refreshFn: () => void) => void = () => {};
+  export let onCacheStatusChange: (isCached: boolean) => void = () => {};
 
   // Local state
   let speciesOptions: string[] = [];
@@ -34,6 +36,7 @@
       if (cachedData) {
         speciesOptions = cachedData;
         isUsingCachedSpecies = true;
+        onCacheStatusChange(true);
         onSpeciesLoaded(speciesOptions);
         return;
       }
@@ -58,6 +61,7 @@
 
       speciesOptions = processedSpecies;
       isUsingCachedSpecies = false;
+      onCacheStatusChange(false);
       cache.set(CACHE_KEYS.SPECIES, processedSpecies, CACHE_TTL.SPECIES);
       onSpeciesLoaded(speciesOptions);
 
@@ -78,6 +82,7 @@
 
   onMount(() => {
     loadSpecies();
+    onRefreshAvailable(refreshSpecies);
   });
 
   // Expose reactive state to parent

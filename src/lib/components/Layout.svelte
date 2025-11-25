@@ -35,6 +35,8 @@
   let speciesOptions: string[] = [];
   let loading: boolean = false;
   let error: string | null = null;
+  let refreshSpecies: (() => void) | null = null;
+  let isUsingCachedSpecies: boolean = false;
 
   // Event handlers - delegate to parent
   const handleTabChange = (tab: 'plan' | 'map' | 'spots') => {
@@ -58,6 +60,14 @@
   const handleSpeciesLoadingChange = (isLoading: boolean) => {
     loading = isLoading;
   };
+
+  const handleSpeciesRefresh = (refreshFn: () => void) => {
+    refreshSpecies = refreshFn;
+  };
+
+  const handleSpeciesCacheStatus = (isCached: boolean) => {
+    isUsingCachedSpecies = isCached;
+  };
 </script>
 
 {#if isMobile}
@@ -66,6 +76,8 @@
     onSpeciesLoaded={handleSpeciesLoaded}
     onError={handleSpeciesError}
     onLoadingChange={handleSpeciesLoadingChange}
+    onRefreshAvailable={handleSpeciesRefresh}
+    onCacheStatusChange={handleSpeciesCacheStatus}
   />
   
   <!-- Mobile Layout: Thumb-Driven HUD -->
@@ -130,7 +142,7 @@
       {:else if activeTab === 'map'}
         <!-- Map Tab: Map Style Controls -->
         <MapStyleSelector 
-          currentMapStyle={currentMapStyle}
+          currentStyle={currentMapStyle}
           onStyleSelect={handleMapStyleChange}
           variant="mobile"
         />  
@@ -330,7 +342,7 @@
               
               <!-- Map Styles -->
               <MapStyleSelector 
-                currentMapStyle={currentMapStyle}
+                currentStyle={currentMapStyle}
                 onStyleSelect={handleMapStyleChange}
                 variant="desktop"
               />
