@@ -6,6 +6,7 @@
 	import { cache, CACHE_KEYS, CACHE_TTL } from '$lib/utils/cache';
 	import { onMount } from 'svelte';
 	import mapboxgl from 'mapbox-gl';
+	import type { FishingConditions, Location, LocationRecommendation } from '$lib/shared/types';
 
 	// Map state
 	let mapContainer: HTMLDivElement | null = null;
@@ -20,6 +21,16 @@
 	let isUsingCachedWeather: boolean = false;
 	let markers: any[] = [];
 	let mapMarkers: mapboxgl.Marker[] = [];
+
+	// Fishing conditions state
+	let recommendedSpots: LocationRecommendation[] = [];
+	let isLoadingRecommendations = false;
+	let recommendationError: string | null = null;
+	let userLocation: { lat: number; lng: number } | null = null;
+	let searchRadius = 10; // Default 10 miles radius
+	let showRecommendedOnly = false; // Toggle between all markers and recommended spots
+	let allMarkers: any[] = []; // Store all markers
+	let recommendedMarkers: any[] = []; // Store only recommended markers
 
 	// UI state
 	let isMobile: boolean = false;
@@ -48,6 +59,8 @@
 		mapInstance = map;
 		await loadData();
 		await loadMarkers();
+		// Try to get user's location for recommendations
+		getUserLocation();
 	};
 
 	const handleMapError = (error: string) => {
@@ -177,6 +190,81 @@
 		// Trigger species reload through Layout component
 	};
 
+	// Get user's current location
+	const getUserLocation = () => {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				(position) => {
+					userLocation = {
+						lat: position.coords.latitude,
+						lng: position.coords.longitude
+					};
+					// Center map on user's location
+					if (mapInstance) {
+						mapInstance.flyTo({
+							center: [userLocation.lng, userLocation.lat],
+							zoom: 10
+						});
+					}
+					// Load recommendations for user's location
+					loadRecommendedSpots();
+				},
+				(error) => {
+					console.error('Error getting location:', error);
+					recommendationError = 'Could not get your location. Using default location.';
+					// Default to New York if location access is denied
+					userLocation = { lat: 40.7128, lng: -74.0060 };
+					loadRecommendedSpots();
+				}
+			);
+		} else {
+			recommendationError = 'Geolocation is not supported by your browser';
+			userLocation = { lat: 40.7128, lng: -74.0060 }; // Default to New York
+			loadRecommendedSpots();
+		}
+	};
+
+	// Load recommended fishing spots based on current location
+	const loadRecommendedSpots = async () => {
+		if (!userLocation) return;
+		
+		isLoadingRecommendations = true;
+		recommendationError = null;
+		
+		try {
+			const response = await fetch(
+				`/api/recommended?latitude=${userLocation.lat}&longitude=${userLocation.lng}&radius=${searchRadius}`
+			);
+			
+			if (!response.ok) {
+				throw new Error(`Recommendations API returned ${response.status}`);
+			}
+			
+			const data = await response.json();
+			recommendedSpots = data.recommendations || [];
+			
+			// Update recommended markers
+			recommendedMarkers = recommendedSpots.map(spot => ({
+				...spot.location,
+				score: spot.score,
+				breakdown: spot.breakdown,
+				title: spot.location.name,
+				lat: spot.location.latitude,
+				lng: spot.location.longitude,
+				isRecommended: true
+			}));
+			
+			// Update markers based on current view mode
+			markers = showRecommendedOnly ? [...recommendedMarkers] : [...allMarkers, ...recommendedMarkers];
+			renderMarkers();
+		} catch (error) {
+			console.error('Failed to load recommendations:', error);
+			recommendationError = error instanceof Error ? error.message : 'Failed to load recommendations';
+		} finally {
+			isLoadingRecommendations = false;
+		}
+	};
+
 	const loadMarkers = async () => {
 		if (!mapInstance) return;
 
@@ -185,7 +273,8 @@
 			if (!response.ok) {
 				throw new Error(`Markers API returned ${response.status}`);
 			}
-			markers = await response.json();
+			allMarkers = await response.json();
+			markers = showRecommendedOnly ? [...recommendedMarkers] : [...allMarkers, ...recommendedMarkers];
 			renderMarkers();
 		} catch (error) {
 			console.error('Failed to load markers:', error);
@@ -209,8 +298,14 @@
 			el.style.cursor = 'pointer';
 			el.style.border = '2px solid white';
 			
-			// Color by category
-			if (marker.category === 'lake') {
+			// Color by score if available (recommended spots)
+			if (marker.score !== undefined) {
+				// Scale color from red (0) to green (100)
+				const hue = (marker.score / 100) * 120; // 0-100 to 0-120 degrees (red to green)
+				el.style.backgroundColor = `hsl(${hue}, 80%, 50%)`;
+			}
+			// Fallback to category-based colors
+			else if (marker.category === 'lake') {
 				el.style.backgroundColor = '#3b82f6'; // blue
 			} else if (marker.category === 'river') {
 				el.style.backgroundColor = '#10b981'; // green
@@ -220,17 +315,58 @@
 				el.style.backgroundColor = '#6366f1'; // indigo
 			}
 
+			// Create popup content
+			let popupContent = `
+				<div style="color: black; min-width: 200px;">
+					<h3 style="font-weight: bold; margin: 0 0 8px 0; font-size: 14px;">${marker.title || 'Fishing Spot'}</h3>
+			`;
+
+			// Add score if available
+			if (marker.score !== undefined) {
+				popupContent += `
+					<div style="background: #f0f0f0; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
+						<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+							<span>Fishing Score:</span>
+							<strong>${Math.round(marker.score)}/100</strong>
+						</div>
+						<div style="background: #ddd; height: 6px; border-radius: 3px; overflow: hidden;">
+							<div style="width: ${marker.score}%; height: 100%; background: ${marker.score > 70 ? '#10b981' : marker.score > 40 ? '#f59e0b' : '#ef4444'};"></div>
+						</div>
+					</div>
+				`;
+
+				// Add breakdown if available
+				if (marker.breakdown) {
+					popupContent += `
+					<div style="margin-top: 8px; font-size: 12px;">
+						<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+							<span>Weather:</span>
+							<span>${Math.round(marker.breakdown.weatherComfort)}/100</span>
+						</div>
+						<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+							<span>Fish Activity:</span>
+							<span>${Math.round(marker.breakdown.fishActivity)}/100</span>
+						</div>
+						<div style="display: flex; justify-content: space-between;">
+							<span>Water Conditions:</span>
+							<span>${Math.round(marker.breakdown.waterConditions)}/100</span>
+						</div>
+					</div>
+					`;
+				}
+			} else {
+				// Default popup for non-recommended markers
+				popupContent += `
+					${marker.description ? `<p style="font-size: 12px; margin: 0 0 4px 0;">${marker.description}</p>` : ''}
+					<p style="font-size: 11px; color: #666; margin: 0;">${marker.category ? `Category: ${marker.category}` : ''}</p>
+				`;
+			}
+
+			popupContent += `</div>`;
+
 			const mapMarker = new mapboxgl.Marker(el)
 				.setLngLat([marker.lng, marker.lat])
-				.setPopup(
-					new mapboxgl.Popup({ offset: 25 }).setHTML(
-						`<div style="color: black;">
-							<h3 style="font-weight: bold; margin-bottom: 4px;">${marker.title}</h3>
-							${marker.description ? `<p style="font-size: 12px;">${marker.description}</p>` : ''}
-							<p style="font-size: 11px; color: #666; margin-top: 4px;">Category: ${marker.category}</p>
-						</div>`
-					)
-				)
+				.setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupContent))
 				.addTo(mapInstance);
 
 			mapMarkers.push(mapMarker);
@@ -238,11 +374,241 @@
 
 		console.log(`Rendered ${mapMarkers.length} markers on the map`);
 	};
+
+	// Toggle between showing all markers and recommended spots
+	const toggleShowRecommended = () => {
+		showRecommendedOnly = !showRecommendedOnly;
+		
+		// Use a timeout to ensure the UI updates before we re-render markers
+		setTimeout(() => {
+			// Create a new array to trigger reactivity
+			markers = showRecommendedOnly 
+				? [...recommendedMarkers] 
+				: [...allMarkers, ...recommendedMarkers];
+			
+			// Force Svelte to recognize the array update
+			markers = [...markers];
+			
+			// Re-render the markers on the map
+			renderMarkers();
+		}, 0);
+	};
 </script>
 
 <svelte:head>
 	<title>HOOK, LINE, & SINKER</title>
 </svelte:head>
+
+<!-- Fishing Conditions Controls -->
+<div class="fishing-controls" style="position: absolute; top: 80px; right: 15px; z-index: 10; background: white; padding: 12px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); width: 240px; max-width: 240px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0; font-size: 14px; color: #333;">Recommended Fishing Spots</h3>
+    </div>
+    
+    <!-- Toggle Switch Row -->
+    <div style="margin-bottom: 12px; position: relative; z-index: 20;">
+        <label class="toggle-switch" style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #555; cursor: pointer;">
+            <span>{showRecommendedOnly ? 'Best Only' : 'All Spots'}</span>
+            <div style="position: relative; display: inline-block; width: 45px; height: 22px; margin-left: 8px;">
+                <input 
+	type="checkbox" 
+	bind:checked={showRecommendedOnly} 
+	on:click={toggleShowRecommended} 
+	style="opacity: 0; width: 0; height: 0; position: absolute;"
+>
+                <span class="slider round"></span>
+            </div>
+        </label>
+    </div>
+    
+    {#if userLocation}
+        <div style="margin-bottom: 10px;">
+            <label style="display: block; margin-bottom: 6px; font-size: 12px; color: #555;">
+                Radius: {searchRadius}mi
+            </label>
+            <input 
+                type="range" 
+                min="5" 
+                max="50" 
+                step="5"
+                bind:value={searchRadius}
+                on:input={() => loadRecommendedSpots()}
+                style="width: 100%; cursor: pointer; height: 4px;"
+                aria-label="Search radius in miles"
+            >
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #777; margin-top: 2px;">
+                <span>5mi</span>
+                <span>50mi</span>
+            </div>
+        </div>
+        
+        {#if recommendationError}
+			<div style="margin-top: 10px; padding: 8px; background: #fee2e2; color: #b91c1c; border-radius: 4px; font-size: 13px;">
+				{recommendationError}
+			</div>
+		{/if}
+        
+        {#if recommendedSpots.length > 0}
+            <div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px;">
+                <h4 style="margin: 0 0 6px 0; font-size: 12px; color: #444;">Top Spots:</h4>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    {#each recommendedSpots.slice(0, 5) as spot, i}
+                        <div 
+                            on:click|stopPropagation={() => {
+                                if (mapInstance) {
+                                    // First, close any open popups
+                                    mapMarkers.forEach(m => {
+                                        const popup = m.getPopup();
+                                        if (popup && popup.isOpen()) {
+                                            m.togglePopup();
+                                        }
+                                    });
+                                    
+                                    // Then fly to the selected spot
+                                    mapInstance.flyTo({
+                                        center: [spot.location.longitude, spot.location.latitude],
+                                        zoom: 12,
+                                        essential: true // This animation is essential and cannot be interrupted
+                                    });
+                                    
+                                    // Find and highlight the marker
+                                    const marker = mapMarkers.find(m => {
+                                        const lngLat = m.getLngLat();
+                                        return lngLat.lng === spot.location.longitude && 
+                                               lngLat.lat === spot.location.latitude;
+                                    });
+                                    
+                                    if (marker) {
+                                        // Small delay to ensure the flyTo is complete
+                                        setTimeout(() => {
+                                            marker.getElement().style.transform = 'scale(1.3)';
+                                            marker.getElement().style.zIndex = '1000';
+                                            marker.togglePopup();
+                                        }, 300);
+                                    }
+                                }
+                            }}
+                            style="padding: 8px; margin-bottom: 6px; background: #f8fafc; border-radius: 4px; cursor: pointer; transition: background 0.2s;"
+                            on:mouseenter={() => {
+                                const marker = mapMarkers.find(m => {
+                                    const lngLat = m.getLngLat();
+                                    return lngLat.lng === spot.location.longitude && 
+                                           lngLat.lat === spot.location.latitude;
+                                });
+                                if (marker) {
+                                    marker.getElement().style.transform = 'scale(1.3)';
+                                    marker.getElement().style.zIndex = '1000';
+                                    marker.togglePopup();
+                                }
+                            }}
+                            on:mouseleave={() => {
+                                const marker = mapMarkers.find(m => {
+                                    const lngLat = m.getLngLat();
+                                    return lngLat.lng === spot.location.longitude && 
+                                           lngLat.lat === spot.location.latitude;
+                                });
+                                if (marker) {
+                                    marker.getElement().style.transform = 'scale(1)';
+                                    marker.getElement().style.zIndex = '1';
+                                    if (marker.getPopup().isOpen()) {
+                                        marker.togglePopup();
+                                    }
+                                }
+                            }}
+                        >
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 500; font-size: 13px;">{i + 1}. {spot.location.name || 'Fishing Spot'}</span>
+                                <span style="font-weight: bold; color: #3b82f6;">{Math.round(spot.score)}</span>
+                            </div>
+                            <div style="font-size: 11px; color: #666; margin-top: 2px;">
+                                {spot.distance?.toFixed(1) || '0.0'} mi away
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            </div>
+        {/if}
+    {:else}
+        <div style="color: #666; font-size: 13px; text-align: center; padding: 10px 0;">
+            {isLoadingRecommendations ? 'Detecting your location...' : 'Enable location access to find the best fishing spots near you.'}
+        </div>
+    {/if}
+</div>
+
+<style>
+	.toggle-switch {
+		display: flex;
+		align-items: center;
+		min-height: 40px;
+	}
+
+	.toggle-switch input {
+		opacity: 0;
+		left: 0;
+	}
+
+	.slider {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: #e2e8f0;
+		transition: .4s;
+		border-radius: 24px;
+	}
+
+	.slider:before {
+		position: absolute;
+		content: "";
+		height: 16px;
+		width: 16px;
+		left: 4px;
+		bottom: 4px;
+		background-color: white;
+		transition: .4s;
+		border-radius: 50%;
+	}
+
+	input:checked + .slider {
+		background-color: #3b82f6;
+	}
+
+	input:focus + .slider {
+		box-shadow: 0 0 1px #3b82f6;
+	}
+
+	input:checked + .slider:before {
+		transform: translateX(26px);
+	}
+
+	/* Rounded sliders */
+	.slider.round {
+		border-radius: 24px;
+	}
+
+	.slider.round:before {
+		border-radius: 50%;
+	}
+
+	/* Ensure the slider controls are above the map */
+	.fishing-controls {
+		z-index: 1000;
+	}
+
+	/* Make sure the range input is clickable */
+	input[type="range"] {
+		position: relative;
+		z-index: 1;
+	}
+
+	/* Improve touch targets */
+	.toggle-switch > div {
+		height: 24px;
+		display: flex;
+		align-items: center;
+	}
+</style>
 
 <div class="relative h-screen w-screen overflow-hidden bg-black">
 	<!-- Map -->
