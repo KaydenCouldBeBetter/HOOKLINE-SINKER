@@ -10,7 +10,9 @@
 
   // Layout props only - no business logic
   export let selectedSpecies: string[] = [];
+  export let selectedCategories: string[] = [];
   export let onToggleSpecies: (species: string) => void = () => {};
+  export let onToggleCategory: (category: string) => void = () => {};
   export let temperature: number = 24;
   export let weatherCondition: 'sunny' | 'cloudy' | 'rainy' = 'sunny';
   export let moonPhase: string = '🌗';
@@ -32,8 +34,15 @@
   export let mapMarkers: any[] = [];
 
   // Reactive calculations
-  $: selectedCount = selectedSpecies.length;
-  $: filterText = selectedCount === 0 ? 'All Species' : `${selectedCount} Selected`;
+  $: selectedCount = selectedSpecies.length + selectedCategories.length;
+  $: filterText = selectedCount === 0 ? 'All Filters' : `${selectedCount} Selected`;
+  
+  // Category options
+  const categoryOptions = [
+    { id: 'lake', name: '🏞️ Lakes', icon: '🏞️' },
+    { id: 'river', name: '🌊 Rivers', icon: '🌊' },
+    { id: 'parking', name: '🚗 Parking', icon: '🚗' }
+  ];
   let activeTab: 'plan' | 'map' | 'spots' = 'plan';
   let speciesOptions: string[] = [];
   let loading: boolean = false;
@@ -401,6 +410,20 @@
                         />
                       {/each}
                     {/if}
+                  </div>
+                  
+                  <!-- Category Filters -->
+                  <div class="space-y-2">
+                    <h4 class="text-midnight-textPrimary font-medium text-sm tracking-wide">Location Type</h4>
+                    <div class="flex flex-wrap gap-2">
+                      {#each categoryOptions as category (category.id)}
+                        <FilterChip 
+                          label={category.name}
+                          active={selectedCategories.includes(category.id)}
+                          onClick={() => onToggleCategory(category.id)}
+                        />
+                      {/each}
+                    </div>
                   </div>
                 {/if}
               </div>

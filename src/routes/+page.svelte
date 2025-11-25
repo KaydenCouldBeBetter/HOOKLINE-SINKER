@@ -15,6 +15,7 @@
 
 	// App state
 	let selectedSpecies: string[] = [];
+	let selectedCategories: string[] = [];
 	let currentWeather: any = null;
 	let weatherError: string | null = null;
 	let isLoadingWeather: boolean = false;
@@ -54,27 +55,43 @@
 			? selectedSpecies.filter((item) => item !== species)
 			: [...selectedSpecies, species];
 		
-		// Apply species filtering to markers
-		filterMarkersBySpecies();
+		// Apply filtering to markers
+		filterMarkers();
 	};
 
-	// Filter markers based on selected species
-	const filterMarkersBySpecies = () => {
+	const toggleCategory = (category: string) => {
+		selectedCategories = selectedCategories.includes(category)
+			? selectedCategories.filter((item) => item !== category)
+			: [...selectedCategories, category];
+		
+		// Apply filtering to markers
+		filterMarkers();
+	};
+
+	// Filter markers based on selected species and categories
+	const filterMarkers = () => {
 		if (!allMarkers.length) return;
 		
-		// If no species selected, show all markers
-		if (selectedSpecies.length === 0) {
+		// If no filters selected, show all markers
+		if (selectedSpecies.length === 0 && selectedCategories.length === 0) {
 			markers = showRecommendedOnly ? [...recommendedMarkers] : [...allMarkers, ...recommendedMarkers];
 		} else {
-			// Filter markers by selected species
+			// Filter markers by selected species and categories
 			const filteredMarkers = allMarkers.filter((marker: any) => {
-				if (!marker.metadata?.fish_species) return false;
-				
-				const fishSpecies = marker.metadata.fish_species as string;
-				// Check if any selected species is found in the marker's fish species string
-				return selectedSpecies.some(species => 
-					fishSpecies.toLowerCase().includes(species.toLowerCase())
+				// Check species filter
+				const speciesMatch = selectedSpecies.length === 0 || (
+					marker.metadata?.fish_species && 
+					selectedSpecies.some(species => 
+						marker.metadata.fish_species.toLowerCase().includes(species.toLowerCase())
+					)
 				);
+				
+				// Check category filter
+				const categoryMatch = selectedCategories.length === 0 || 
+					selectedCategories.includes(marker.category);
+				
+				// Return markers that match ALL selected filter types
+				return speciesMatch && categoryMatch;
 			});
 			
 			// Combine filtered markers with recommended markers
@@ -316,8 +333,8 @@
 				isRecommended: true
 			}));
 			
-			// Apply species filtering after loading recommendations
-			filterMarkersBySpecies();
+			// Apply filtering after loading recommendations
+			filterMarkers();
 		} catch (error) {
 			console.error('Failed to load recommendations:', error);
 			recommendationError = error instanceof Error ? error.message : 'Failed to load recommendations';
@@ -335,8 +352,8 @@
 				throw new Error(`Markers API returned ${response.status}`);
 			}
 			allMarkers = await response.json();
-			// Apply species filtering after loading markers
-			filterMarkersBySpecies();
+			// Apply filtering after loading markers
+			filterMarkers();
 		} catch (error) {
 			console.error('Failed to load markers:', error);
 		}
@@ -431,8 +448,8 @@
 	const toggleShowRecommended = () => {
 		showRecommendedOnly = !showRecommendedOnly;
 		
-		// Apply species filtering after toggling recommended view
-		filterMarkersBySpecies();
+		// Apply filtering after toggling recommended view
+		filterMarkers();
 	};
 </script>
 
@@ -449,7 +466,9 @@
 	<!-- Responsive UI Layer -->
 	<Layout
 		{selectedSpecies}
+		{selectedCategories}
 		onToggleSpecies={toggleSpecies}
+		onToggleCategory={toggleCategory}
 		temperature={currentWeather?.forecast?.[0]?.summary?.maxTemp || 24}
 		weatherCondition={currentWeather?.forecast?.[0]?.summary?.condition?.toLowerCase()?.includes('rain') ? 'rainy' : 
 											currentWeather?.forecast?.[0]?.summary?.condition?.toLowerCase()?.includes('cloud') ? 'cloudy' : 'sunny'}
