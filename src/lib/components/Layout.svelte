@@ -168,7 +168,7 @@
     <!-- Header Row -->
     <div class="flex justify-between items-center p-4 border-b border-white/10">
       <!-- Hamburger Menu -->
-      <button class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors p-2 hover:bg-white/5 rounded-lg">
+      <button class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors p-2 hover:bg-white/5 rounded-lg" title="Main Menu">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>

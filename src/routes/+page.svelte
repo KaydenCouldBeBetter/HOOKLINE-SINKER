@@ -4,8 +4,9 @@
 	import MapStyleSelector from '$lib/components/MapStyleSelector.svelte';
 	import type { MapStyle } from '$lib/config/map';
 	import { cache, CACHE_KEYS, CACHE_TTL } from '$lib/utils/cache';
+	import { onMount } from 'svelte';
 
-	<!-- Map state -->
+	// Map state
 	let mapContainer: HTMLDivElement | null = null;
 	let mapStyle: MapStyle = 'midnight-water';
 	let showLayersPanel = false;
