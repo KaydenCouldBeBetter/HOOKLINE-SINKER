@@ -173,12 +173,3 @@
 		{isMobile}
 	/>
 </div>
-
-<!-- Map Style Selector - Only on desktop -->
-{#if !isMobile}
-<MapStyleSelector 
-	bind:currentStyle={mapStyle} 
-	on:styleChange={handleMapStyleChange}
-	{isMobile}
-/>
-{/if}
