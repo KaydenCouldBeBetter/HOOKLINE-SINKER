@@ -133,17 +133,16 @@ GET /api/locations/search?name=lake
 
 **Returns:** `Location[]` - Array of matching locations.
 
-### Get Locations within Bounds
+### Get Locations within Radius
 ```
-GET /api/locations/bounds?minLat=40.0&maxLat=45.0&minLng=-75.0&maxLng=-70.0
+GET /api/locations/radius?latitude=44.0&longitude=-74.0&radius=50
 ```
 **Query Parameters:**
-- `minLat` (number, required) - Minimum latitude
-- `maxLat` (number, required) - Maximum latitude
-- `minLng` (number, required) - Minimum longitude
-- `maxLng` (number, required) - Maximum longitude
+- `latitude` (number, required) - Center point latitude
+- `longitude` (number, required) - Center point longitude
+- `radius` (number, required) - Search radius in miles (0-500)
 
-**Returns:** `Location[]` - Array of locations within bounding box.
+**Returns:** `Location[]` - Array of locations within radius, sorted by distance, with calculated distance field.
 
 ### Get Location Count
 ```
@@ -365,6 +364,61 @@ GET /api/weather/radius?latitude=44.0&longitude=-74.0&radius=50
   ]
 }
 ```
+
+---
+
+## Recommended Locations Endpoint
+
+### Get Recommended Fishing Spots
+```
+GET /api/recommended?latitude=44.0&longitude=-74.0&radius=50
+```
+**Query Parameters:**
+- `latitude` (number, required) - Center point latitude
+- `longitude` (number, required) - Center point longitude
+- `radius` (number, required) - Search radius in miles (0-500)
+
+**Description:** Returns fishing locations within a radius, sorted by overall fishing score. The score is calculated based on weather comfort, fish activity (moon phase, tides, water temperature), and water conditions (wave height, visibility, etc.) for today.
+
+**Returns:** Recommended locations result
+```json
+{
+  "recommendations": [
+    {
+      "locationId": 42,
+      "locationName": "Pine Pond",
+      "location": { /* Full Location object */ },
+      "weather": { /* Full FishingConditions object */ },
+      "distance": 3.2,
+      "score": 87.5,
+      "breakdown": {
+        "weatherComfort": 92.0,
+        "fishActivity": 85.0,
+        "waterConditions": 85.5
+      }
+    }
+  ],
+  "failed": [
+    {
+      "locationId": 99,
+      "locationName": "Failed Lake",
+      "error": "API rate limit exceeded",
+      "distance": 12.5
+    }
+  ],
+  "totalLocations": 12,
+  "successfulScores": 10,
+  "failedWeatherFetches": 2
+}
+```
+
+**Scoring Details:**
+- **Overall Score (0-100)**: Average of the three component scores
+- **Weather Comfort (0-100)**: Based on air temperature (optimal 15-25°C), wind speed (lower is better), and precipitation (less is better)
+- **Fish Activity (0-100)**: Based on moon phase (new/full moon are best), tide changes during prime fishing hours (dawn/dusk), and water temperature (optimal 15-22°C)
+- **Water Conditions (0-100)**: Based on wave height (lower is better for safety), swell height (lower is better), and visibility (higher is better)
+
+**Note:** Locations are sorted by overall score in descending order (best fishing conditions first).
 
 ---
 

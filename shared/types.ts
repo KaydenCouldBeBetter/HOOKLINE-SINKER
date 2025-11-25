@@ -137,6 +137,34 @@ export interface FishingConditions {
     }>;
 }
 
+// Response type for radius query
+export interface LocationWeatherResult {
+    locationId: number;
+    locationName: string;
+    location: Location;
+    weather: FishingConditions;
+    distance: number;
+}
+
+export interface LocationWeatherError {
+    locationId: number;
+    locationName: string;
+    error: string;
+    distance: number;
+}
+
+// Recommendation Types
+export interface ScoreBreakdown {
+    weatherComfort: number;
+    fishActivity: number;
+    waterConditions: number;
+}
+
+export interface LocationRecommendation extends LocationWeatherResult {
+    score: number;
+    breakdown: ScoreBreakdown;
+}
+
 export type Success<T> = {
     ok: true
     value: any
