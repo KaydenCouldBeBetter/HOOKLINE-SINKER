@@ -47,6 +47,14 @@
 		loadData();
 	};
 
+	const handleMapError = (error: string) => {
+		console.error('Map error:', error);
+	};
+
+	const handleMapLoad = () => {
+		console.log('Map loaded successfully');
+	};
+
 	const loadData = async () => {
 		// Load weather data with caching
 		isLoadingWeather = true;
@@ -179,7 +187,7 @@
 
 <div class="relative h-screen w-screen overflow-hidden bg-black">
 	<!-- Map -->
-	<MapManager bind:mapStyle={mapStyle} bind:mapContainer={mapContainer} onMapReady={handleMapReady} />
+	<MapManager bind:mapStyle={mapStyle} bind:mapContainer={mapContainer} onMapReady={handleMapReady} onMapError={handleMapError} onMapLoad={handleMapLoad} />
 
 	<!-- Responsive UI Layer -->
 	<Layout
