@@ -151,7 +151,10 @@
     <div class="flex items-center justify-between p-4">
       <!-- Menu Icon (Left) -->
       <div class="bg-[#1e1e2e]/70 backdrop-blur-xl border border-white/10 rounded-lg p-3 h-11 flex items-center justify-center">
-        <button class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors" title="Main Menu">
+        <button class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors" title="Main Menu" on:click={() => {
+          const menuEvent = new CustomEvent('toggleMenu');
+          window.dispatchEvent(menuEvent);
+        }}>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
@@ -199,14 +202,20 @@
     <!-- Header Row -->
     <div class="flex justify-between items-center p-4 border-b border-white/10">
       <!-- Hamburger Menu -->
-      <button class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors p-2 hover:bg-white/5 rounded-lg" title="Main Menu">
+      <button class="text-[#cdd6f4] hover:text-[#f2cdcd] transition-colors p-2 hover:bg-white/5 rounded-lg" title="Main Menu" on:click={() => {
+        const menuEvent = new CustomEvent('toggleMenu');
+        window.dispatchEvent(menuEvent);
+      }}>
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
       </button>
       
       <!-- User Avatar -->
-      <div class="w-8 h-8 bg-[#89b4fa] rounded-full flex items-center justify-center text-[#1e1e2e] font-semibold text-sm hover:bg-[#b4f8f8] transition-colors cursor-pointer" title="User Profile">
+      <div class="w-8 h-8 bg-[#89b4fa] rounded-full flex items-center justify-center text-[#1e1e2e] font-semibold text-sm hover:bg-[#b4f8f8] transition-colors cursor-pointer" title="User Profile" on:click={() => {
+        const profileEvent = new CustomEvent('toggleProfile');
+        window.dispatchEvent(profileEvent);
+      }}>
         U
       </div>
     </div>

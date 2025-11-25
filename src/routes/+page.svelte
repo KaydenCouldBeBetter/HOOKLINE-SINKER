@@ -117,14 +117,36 @@
 			mapInstance?.setBearing(0);
 		};
 
+		const handleToggleLayers = () => {
+			// Cycle through map styles when layers button is clicked
+			const styles: MapStyle[] = ['midnight-water', 'glare-cut', 'satellite', 'nautical'];
+			const currentIndex = styles.indexOf(mapStyle);
+			const nextIndex = (currentIndex + 1) % styles.length;
+			mapStyle = styles[nextIndex];
+		};
+
+		const handleToggleMenu = () => {
+			console.log('Menu toggled - placeholder for main menu functionality');
+		};
+
+		const handleToggleProfile = () => {
+			console.log('Profile toggled - placeholder for user profile functionality');
+		};
+
 		window.addEventListener('mapZoomIn', handleZoomIn);
 		window.addEventListener('mapZoomOut', handleZoomOut);
 		window.addEventListener('resetBearing', handleResetBearing);
+		window.addEventListener('toggleMapLayers', handleToggleLayers);
+		window.addEventListener('toggleMenu', handleToggleMenu);
+		window.addEventListener('toggleProfile', handleToggleProfile);
 
 		return () => {
 			window.removeEventListener('mapZoomIn', handleZoomIn);
 			window.removeEventListener('mapZoomOut', handleZoomOut);
 			window.removeEventListener('resetBearing', handleResetBearing);
+			window.removeEventListener('toggleMapLayers', handleToggleLayers);
+			window.removeEventListener('toggleMenu', handleToggleMenu);
+			window.removeEventListener('toggleProfile', handleToggleProfile);
 		};
 	});
 
