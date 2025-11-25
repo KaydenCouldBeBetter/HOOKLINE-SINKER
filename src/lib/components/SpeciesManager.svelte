@@ -85,10 +85,10 @@
 </script>
 
 <!-- This component is purely logical - no UI -->
-{#if $loading}
+{#if loading}
   <slot loading={true} error={null} species={[]} refresh={refreshSpecies} />
-{:else if $error}
-  <slot loading={false} error={$error} species={[]} refresh={refreshSpecies} />
+{:else if error}
+  <slot loading={false} error={error} species={[]} refresh={refreshSpecies} />
 {:else}
   <slot loading={false} error={null} species={speciesOptions} refresh={refreshSpecies} />
 {/if}
