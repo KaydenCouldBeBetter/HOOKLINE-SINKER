@@ -22,3 +22,8 @@ declare module 'better-sqlite3' {
 
   export = Database;
 }
+
+// Type definitions for @sveltejs/kit
+declare module '@sveltejs/kit' {
+  export function json(data: any, init?: ResponseInit): Response;
+}
