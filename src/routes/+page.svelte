@@ -1,6 +1,7 @@
 <script lang="ts">
 	import MapManager from '$lib/components/MapManager.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import LocationSidePanel from '$lib/components/LocationSidePanel.svelte';
 	import MapStyleSelector from '$lib/components/MapStyleSelector.svelte';
 	import type { MapStyle } from '$lib/config/map';
 	import { cache, CACHE_KEYS, CACHE_TTL } from '$lib/utils/cache';
@@ -35,6 +36,13 @@
 
 	// UI state
 	let isMobile: boolean = false;
+
+	// Side panel state
+	let selectedLocation: LocationRecommendation | null = null;
+	let isSidePanelOpen = false;
+
+	// Radius circle layer
+	let radiusCircle: any = null;
 
 	// Responsive breakpoint detection
 	$: {
@@ -307,40 +315,199 @@
 		}
 	};
 
+	// Helper function to create circle polygon
+	const createCirclePolygon = (center: [number, number], radiusInMiles: number, points: number = 64) => {
+		const coords = {
+			latitude: center[1],
+			longitude: center[0]
+		};
+
+		const km = radiusInMiles * 1.60934; // Convert miles to km
+		const ret = [];
+		const distanceX = km / (111.320 * Math.cos((coords.latitude * Math.PI) / 180));
+		const distanceY = km / 110.574;
+
+		for (let i = 0; i < points; i++) {
+			const theta = (i / points) * (2 * Math.PI);
+			const x = distanceX * Math.cos(theta);
+			const y = distanceY * Math.sin(theta);
+			ret.push([coords.longitude + x, coords.latitude + y]);
+		}
+		ret.push(ret[0]); // Close the polygon
+
+		return ret;
+	};
+
+	// Draw radius circle on map
+	const drawRadiusCircle = () => {
+		if (!mapInstance || !userLocation) return;
+
+		// Remove existing circle and user marker if present
+		if (radiusCircle) {
+			if (mapInstance.getLayer('radius-circle-fill')) {
+				mapInstance.removeLayer('radius-circle-fill');
+			}
+			if (mapInstance.getLayer('radius-circle-outline')) {
+				mapInstance.removeLayer('radius-circle-outline');
+			}
+			if (mapInstance.getSource('radius-circle')) {
+				mapInstance.removeSource('radius-circle');
+			}
+			if (mapInstance.getLayer('user-location-circle')) {
+				mapInstance.removeLayer('user-location-circle');
+			}
+			if (mapInstance.getLayer('user-location-dot')) {
+				mapInstance.removeLayer('user-location-dot');
+			}
+			if (mapInstance.getSource('user-location')) {
+				mapInstance.removeSource('user-location');
+			}
+		}
+
+		// Create circle polygon
+		const circleCoords = createCirclePolygon([userLocation.lng, userLocation.lat], searchRadius);
+
+		// Create circle GeoJSON
+		const circleGeoJSON = {
+			type: 'FeatureCollection' as const,
+			features: [
+				{
+					type: 'Feature' as const,
+					properties: {},
+					geometry: {
+						type: 'Polygon' as const,
+						coordinates: [circleCoords]
+					}
+				}
+			]
+		};
+
+		// Add source
+		mapInstance.addSource('radius-circle', {
+			type: 'geojson',
+			data: circleGeoJSON
+		});
+
+		// Add circle fill layer
+		mapInstance.addLayer({
+			id: 'radius-circle-fill',
+			type: 'fill',
+			source: 'radius-circle',
+			paint: {
+				'fill-color': '#3b82f6',
+				'fill-opacity': 0.1
+			}
+		});
+
+		// Add circle outline layer
+		mapInstance.addLayer({
+			id: 'radius-circle-outline',
+			type: 'line',
+			source: 'radius-circle',
+			paint: {
+				'line-color': '#3b82f6',
+				'line-width': 2,
+				'line-opacity': 0.6
+			}
+		});
+
+		// Add user location marker
+		const userLocationGeoJSON = {
+			type: 'FeatureCollection' as const,
+			features: [
+				{
+					type: 'Feature' as const,
+					properties: {},
+					geometry: {
+						type: 'Point' as const,
+						coordinates: [userLocation.lng, userLocation.lat]
+					}
+				}
+			]
+		};
+
+		mapInstance.addSource('user-location', {
+			type: 'geojson',
+			data: userLocationGeoJSON
+		});
+
+		// Add outer circle (pulse effect)
+		mapInstance.addLayer({
+			id: 'user-location-circle',
+			type: 'circle',
+			source: 'user-location',
+			paint: {
+				'circle-radius': 16,
+				'circle-color': '#3b82f6',
+				'circle-opacity': 0.3
+			}
+		});
+
+		// Add inner dot
+		mapInstance.addLayer({
+			id: 'user-location-dot',
+			type: 'circle',
+			source: 'user-location',
+			paint: {
+				'circle-radius': 8,
+				'circle-color': '#3b82f6',
+				'circle-opacity': 1,
+				'circle-stroke-width': 2,
+				'circle-stroke-color': '#ffffff'
+			}
+		});
+
+		radiusCircle = true;
+	};
+
 	// Load recommended fishing spots based on current location
 	const loadRecommendedSpots = async () => {
 		if (!userLocation) return;
-		
+
 		isLoadingRecommendations = true;
 		recommendationError = null;
-		
+
 		try {
 			const response = await fetch(
 				`/api/recommended?latitude=${userLocation.lat}&longitude=${userLocation.lng}&radius=${searchRadius}`
 			);
-			
+
 			if (!response.ok) {
 				throw new Error(`Recommendations API returned ${response.status}`);
 			}
-			
+
 			const data = await response.json();
 			recommendedSpots = data.recommendations || [];
-			
+
 			// Update recommended markers
 			recommendedMarkers = recommendedSpots.map(spot => ({
-				...spot.location,
+				lat: spot.location.latitude,
+				lng: spot.location.longitude,
+				name: spot.location.name,
+				title: spot.location.name,
+				locationId: spot.locationId,
 				score: spot.score,
-				isRecommended: true
+				isRecommended: true,
+				description: spot.location.description || ''
 			}));
-			
+
 			// Apply filtering after loading recommendations
 			filterMarkers();
+
+			// Draw radius circle
+			drawRadiusCircle();
 		} catch (error) {
 			console.error('Failed to load recommendations:', error);
 			recommendationError = error instanceof Error ? error.message : 'Failed to load recommendations';
 		} finally {
 			isLoadingRecommendations = false;
 		}
+	};
+
+	// Update search radius and reload recommendations
+	const updateSearchRadius = (newRadius: number) => {
+		searchRadius = newRadius;
+		loadRecommendedSpots();
 	};
 
 	const loadMarkers = async () => {
@@ -371,7 +538,7 @@
 			// Validate coordinates
 			const lat = typeof marker.lat === 'number' ? marker.lat : parseFloat(marker.lat);
 			const lng = typeof marker.lng === 'number' ? marker.lng : parseFloat(marker.lng);
-			
+
 			// Skip markers with invalid coordinates
 			if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
 				console.warn('Skipping marker with invalid coordinates:', marker);
@@ -385,12 +552,15 @@
 			el.style.borderRadius = '50%';
 			el.style.cursor = 'pointer';
 			el.style.border = '2px solid white';
-			
+
 			// Color by score if available (recommended spots)
 			if (marker.score !== undefined) {
 				// Scale color from red (0) to green (100)
 				const hue = (marker.score / 100) * 120; // 0-100 to 0-120 degrees (red to green)
 				el.style.backgroundColor = `hsl(${hue}, 80%, 50%)`;
+
+				// Add score as text inside marker
+				el.innerHTML = `<span style="font-size: 9px; font-weight: bold; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.8); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">${Math.round(marker.score)}</span>`;
 			}
 			// Fallback to category-based colors
 			else if (marker.category === 'lake') {
@@ -438,6 +608,21 @@
 				.setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupContent))
 				.addTo(mapInstance);
 
+			// Add click handler for recommended spots to open side panel
+			if (marker.isRecommended && (marker as any).locationId) {
+				el.onclick = (e) => {
+					e.stopPropagation();
+					// Find the full recommendation data
+					const recommendation = recommendedSpots.find(
+						spot => spot.locationId === (marker as any).locationId
+					);
+					if (recommendation) {
+						selectedLocation = recommendation;
+						isSidePanelOpen = true;
+					}
+				};
+			}
+
 			mapMarkers.push(mapMarker);
 		});
 
@@ -471,7 +656,7 @@
 		onToggleSpecies={toggleSpecies}
 		onToggleCategory={toggleCategory}
 		temperature={currentWeather?.forecast?.[0]?.summary?.maxTemp || 24}
-		weatherCondition={currentWeather?.forecast?.[0]?.summary?.condition?.toLowerCase()?.includes('rain') ? 'rainy' : 
+		weatherCondition={currentWeather?.forecast?.[0]?.summary?.condition?.toLowerCase()?.includes('rain') ? 'rainy' :
 											currentWeather?.forecast?.[0]?.summary?.condition?.toLowerCase()?.includes('cloud') ? 'cloudy' : 'sunny'}
 		moonPhase={currentWeather?.forecast?.[0]?.moonPhase || '🌗'}
 		isUsingCachedWeather={isUsingCachedWeather}
@@ -482,12 +667,24 @@
 		toggleShowRecommended={() => showRecommendedOnly = !showRecommendedOnly}
 		{userLocation}
 		{searchRadius}
+		onUpdateSearchRadius={updateSearchRadius}
 		{loadRecommendedSpots}
 		recommendationError={recommendationError}
 		{recommendedSpots}
 		isLoadingRecommendations={isLoadingRecommendations}
 		mapInstance={mapInstance}
 		mapMarkers={mapMarkers}
+	/>
+
+	<!-- Location Side Panel -->
+	<LocationSidePanel
+		location={selectedLocation}
+		isOpen={isSidePanelOpen}
+		onClose={() => {
+			isSidePanelOpen = false;
+			selectedLocation = null;
+		}}
+		{isMobile}
 	/>
 </div>
 

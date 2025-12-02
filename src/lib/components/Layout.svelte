@@ -27,6 +27,7 @@
   export let toggleShowRecommended: () => void = () => {};
   export let userLocation: { lat: number; lng: number } | null = null;
   export let searchRadius: number = 25;
+  export let onUpdateSearchRadius: (radius: number) => void = () => {};
   export let loadRecommendedSpots: () => void = () => {};
   export let recommendationError: string | null = null;
   export let recommendedSpots: any[] = [];
@@ -208,22 +209,24 @@
           
           {#if userLocation}
             <div class="mb-3">
-              <label for="mobile-radius-slider" class="block mb-1.5 text-xs text-midnight-textSecondary">
-                Radius: {searchRadius}mi
+              <label for="mobile-radius-slider" class="block mb-1.5 text-xs font-semibold text-midnight-textPrimary">
+                Search Radius: <span class="text-cyan-300">{searchRadius} mi</span>
               </label>
-              <input 
+              <input
                 id="mobile-radius-slider"
-                type="range" 
-                min="5" 
-                max="50" 
+                type="range"
+                min="5"
+                max="50"
                 step="5"
-                bind:value={searchRadius}
-                on:input={() => loadRecommendedSpots()}
-                class="w-full cursor-pointer h-1 bg-white/10 rounded"
+                value={searchRadius}
+                on:change={(e) => onUpdateSearchRadius(Number(e.currentTarget.value))}
+                class="w-full cursor-pointer h-2 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-full appearance-none slider-thumb"
+                style="background: linear-gradient(to right, #3b82f6 0%, #06b6d4 100%);"
                 aria-label="Search radius in miles"
               >
-              <div class="flex justify-between text-xs text-midnight-textMuted mt-0.5">
+              <div class="flex justify-between text-xs text-midnight-textMuted mt-1">
                 <span>5mi</span>
+                <span class="text-midnight-textSecondary">{recommendedSpots.length} spots found</span>
                 <span>50mi</span>
               </div>
             </div>
@@ -468,22 +471,24 @@
           
           {#if userLocation}
             <div class="mb-3">
-              <label for="radius-slider" class="block mb-1.5 text-xs text-midnight-textSecondary">
-                Radius: {searchRadius}mi
+              <label for="radius-slider" class="block mb-1.5 text-xs font-semibold text-midnight-textPrimary">
+                Search Radius: <span class="text-cyan-300">{searchRadius} mi</span>
               </label>
-              <input 
+              <input
                 id="radius-slider"
-                type="range" 
-                min="5" 
-                max="50" 
+                type="range"
+                min="5"
+                max="50"
                 step="5"
-                bind:value={searchRadius}
-                on:input={() => loadRecommendedSpots()}
-                class="w-full cursor-pointer h-1 bg-white/10 rounded"
+                value={searchRadius}
+                on:change={(e) => onUpdateSearchRadius(Number(e.currentTarget.value))}
+                class="w-full cursor-pointer h-2 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-full appearance-none slider-thumb"
+                style="background: linear-gradient(to right, #3b82f6 0%, #06b6d4 100%);"
                 aria-label="Search radius in miles"
               >
-              <div class="flex justify-between text-xs text-midnight-textMuted mt-0.5">
+              <div class="flex justify-between text-xs text-midnight-textMuted mt-1">
                 <span>5mi</span>
+                <span class="text-midnight-textSecondary">{recommendedSpots.length} spots found</span>
                 <span>50mi</span>
               </div>
             </div>
@@ -685,6 +690,59 @@
 		height: 24px;
 		display: flex;
 		align-items: center;
+	}
+
+	/* Range slider styling */
+	input[type="range"].slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		background: transparent;
+	}
+
+	input[type="range"].slider-thumb::-webkit-slider-track {
+		background: linear-gradient(to right, #3b82f6 0%, #06b6d4 100%);
+		height: 8px;
+		border-radius: 4px;
+	}
+
+	input[type="range"].slider-thumb::-moz-range-track {
+		background: linear-gradient(to right, #3b82f6 0%, #06b6d4 100%);
+		height: 8px;
+		border-radius: 4px;
+	}
+
+	input[type="range"].slider-thumb::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background: #fff;
+		border: 2px solid #3b82f6;
+		cursor: pointer;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+		transition: all 0.2s;
+	}
+
+	input[type="range"].slider-thumb::-moz-range-thumb {
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background: #fff;
+		border: 2px solid #3b82f6;
+		cursor: pointer;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+		transition: all 0.2s;
+	}
+
+	input[type="range"].slider-thumb::-webkit-slider-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+	}
+
+	input[type="range"].slider-thumb::-moz-range-thumb:hover {
+		transform: scale(1.1);
+		box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
 	}
 </style>
 
